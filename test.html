@@ -1,0 +1,61 @@
+<!doctype html>
+<html>
+  <head>
+    <title>WebSocket Test</title>
+  </head>
+  <body>
+    <h1>Hot Potato WebSocket Test</h1>
+    <button id="connect">Connect</button>
+    <button id="send">Send Message</button>
+    <button id="disconnect">Disconnect</button>
+    <div id="log"></div>
+
+    <script>
+      let ws;
+      const log = document.getElementById("log");
+
+      function addLog(message) {
+        const p = document.createElement("p");
+        p.textContent = message;
+        log.appendChild(p);
+      }
+
+      document.getElementById("connect").addEventListener("click", () => {
+        ws = new WebSocket("ws://localhost:8080");
+
+        ws.onopen = () => {
+          addLog("✅ Connected");
+        };
+
+        ws.onmessage = (event) => {
+          addLog("📩 Server says: " + event.data);
+        };
+
+        ws.onerror = (error) => {
+          addLog("❌ Error: " + error);
+        };
+
+        ws.onclose = () => {
+          addLog("🔌 Disconnected");
+        };
+      });
+
+      document.getElementById("send").addEventListener("click", () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.send(JSON.stringify({ type: "JOIN_ROOM", roomId: "test" }));
+          addLog("📤 Sent: JOIN_ROOM");
+        } else {
+          addLog("❌ Not connected");
+        }
+      });
+
+      document.getElementById("disconnect").addEventListener("click", () => {
+        if (ws && ws.readyState === WebSocket.OPEN) {
+          ws.close();
+        } else {
+          addLog("❌ Not connected");
+        }
+      });
+    </script>
+  </body>
+</html>
