@@ -1,0 +1,1 @@
+Hot Potato Online is a real-time multiplayer party game built to explore server-authoritative game logic, low-latency networking, and scalable room-based architecture. The project focuses on fairness, synchronization, and player experience under time pressure.
