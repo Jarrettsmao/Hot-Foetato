@@ -43,6 +43,15 @@ wss.on("connection", (ws) => {
         type: "ROOM_UPDATE",
         room: room,
       });
+
+      //send confirmation of room joining
+      ws.send(
+        JSON.stringify({
+          type: "JOIN_SUCCESS",
+          playerId,
+          roomId,
+        }),
+      );
     } else if (message.type === "START_GAME") {
       const clientData = clients.get(ws);
 
@@ -86,43 +95,49 @@ wss.on("connection", (ws) => {
       });
 
       console.log(
-        `Game started in room ${clientData.roomId}, timer: ${randomDelay/1000} seconds`,
+        `Game started in room ${clientData.roomId}, timer: ${randomDelay / 1000} seconds`,
       );
-    } else if (message.type === "PASS_POTATO"){
+    } else if (message.type === "PASS_POTATO") {
       const clientData = clients.get(ws);
-      if(!clientData) return;
+      if (!clientData) return;
 
       const room = rooms.get(clientData.roomId);
-      if(!room) return;
+      if (!room) return;
 
       const { targetPlayerId } = message;
 
       //check if playing
-      if (room.phase !== 'playing') {
-        ws.send(JSON.stringify({
-          type: "ERROR",
-          message: "Game is not active"
-        }));
+      if (room.phase !== "playing") {
+        ws.send(
+          JSON.stringify({
+            type: "ERROR",
+            message: "Game is not active",
+          }),
+        );
         return;
       }
 
       //check if player has potato
-      if (room.potatoHolderId !== clientData.playerId){
-        ws.send(JSON.stringify({
-          type: "ERROR",
-          message: "You do not have the potato"
-        }));
+      if (room.potatoHolderId !== clientData.playerId) {
+        ws.send(
+          JSON.stringify({
+            type: "ERROR",
+            message: "You do not have the potato",
+          }),
+        );
         return;
       }
 
       //checks target player exists
       console.log("target id: " + targetPlayerId);
-      const targetPlayer = room.players.find(p => p.id === targetPlayerId);
+      const targetPlayer = room.players.find((p) => p.id === targetPlayerId);
       if (!targetPlayer) {
-        ws.send(JSON.stringify({
-          type: "ERROR",
-          message: "Invalid target player"
-        }));
+        ws.send(
+          JSON.stringify({
+            type: "ERROR",
+            message: "Invalid target player",
+          }),
+        );
         return;
       }
 
@@ -133,13 +148,13 @@ wss.on("connection", (ws) => {
       broadcast(clientData.roomId, {
         type: "POTATO_PASSED",
         room: room,
-        message: `Potato passed to ${targetPlayer.name}!`
+        message: `Potato passed to ${targetPlayer.name}!`,
       });
 
-      console.log(`Potato passed to ${targetPlayer.name} in room ${clientData.roomId}`);
+      console.log(
+        `Potato passed to ${targetPlayer.name} in room ${clientData.roomId}`,
+      );
     }
-
-
   });
 
   function broadcast(roomId: string, message: any) {
@@ -172,7 +187,7 @@ wss.on("connection", (ws) => {
         //Broadcast update
         broadcast(clientData.roomId, {
           type: "ROOM_UPDATE",
-          room: rooms,
+          room: room,
           message: playerName + " disconnected",
         });
       }
@@ -187,9 +202,9 @@ wss.on("connection", (ws) => {
     const now = Date.now();
 
     rooms.forEach((room, roomId) => {
-      if (room.phase === "playing" && room.endTime !== null){
+      if (room.phase === "playing" && room.endTime !== null) {
         if (now >= room.endTime) {
-          const loser = room.players.find(p => p.id === room.potatoHolderId);
+          const loser = room.players.find((p) => p.id === room.potatoHolderId);
 
           //end game
           room.phase = "ended";
@@ -200,7 +215,7 @@ wss.on("connection", (ws) => {
             type: "GAME_ENDED",
             room: room,
             loser: loser,
-            message: `💥 BOOM! ${loser?.name || 'Someone'} lost!`
+            message: `💥 BOOM! ${loser?.name || "Someone"} lost!`,
           });
 
           console.log(`Game ended in room ${roomId}, loser: ${loser?.name}`);
