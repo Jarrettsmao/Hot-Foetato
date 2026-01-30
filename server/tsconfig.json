@@ -7,9 +7,9 @@
     "skipLibCheck": true,
     "strict": true,
     "outDir": "./dist",
-    "rootDir": "./src"
+    "rootDir": "server/src"
   },
-  "include": ["src/**/*"],
+  "include": ["server/src/**/*"],
   "exclude": ["node_modules"],
   "ts-node": {
     "esm": true
