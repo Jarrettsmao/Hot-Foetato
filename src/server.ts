@@ -281,13 +281,19 @@ wss.on("connection", (ws: WebSocket) => {
           : "Unknown Player";
 
         room.players = room.players.filter((p) => p.id !== clientData.playerId);
-        //Broadcast update
-        broadcast(clientData.roomId, {
-          type: "GAME_ENDED",
-          room: room,
-          message: playerName + " disconnected",
-        });
 
+        if (room.players.length === 0) {
+          //if no players left, remove room
+          rooms.delete(clientData.roomId);
+          console.log(`Room ${clientData.roomId} deleted (empty)`);
+        } else {
+          //broadcast if room has players left
+          broadcast(clientData.roomId, {
+            type: "GAME_ENDED",
+            room: room,
+            message: playerName + " disconnected",
+          });
+        }
         room.phase = "ended";
         room.endTime = null;
       }
