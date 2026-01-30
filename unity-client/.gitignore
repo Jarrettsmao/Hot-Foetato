@@ -1,0 +1,35 @@
+# =====================
+# Unity generated folders
+# =====================
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+UserSettings/
+
+# =====================
+# Visual Studio / Rider
+# =====================
+.vs/
+.idea/
+*.csproj
+*.sln
+*.user
+*.pidb
+*.booproj
+*.svd
+
+# =====================
+# Unity cache / meta
+# =====================
+*.tmp
+*.bak
+*.swp
+
+# =====================
+# OS junk
+# =====================
+.DS_Store
+Thumbs.db
