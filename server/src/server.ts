@@ -118,7 +118,9 @@ wss.on("connection", (ws: WebSocket) => {
       //broadcast to everyone in room
       broadcast(roomId, {
         type: "ROOM_UPDATE",
-        room: room,
+        players: room.players,
+        phase: room.phase,
+        potatoHolderId: room.potatoHolderId,
       });
 
       //send confirmation of room joining
@@ -168,8 +170,16 @@ wss.on("connection", (ws: WebSocket) => {
       //broadcast game start
       broadcast(clientData.roomId, {
         type: "GAME_STARTED",
-        room: room,
+        potatoHolderId: room.potatoHolderId,
         message: `Game started! ${room.players.find((p) => p.id === room.potatoHolderId)?.name} has the potato!`,
+      });
+
+      //send snapshot so everyone is in sync
+      broadcast(clientData.roomId, {
+        type: "ROOM_UPDATE",
+        players: room.players,
+        phase: room.phase,
+        potatoHolderId: room.potatoHolderId,
       });
 
       console.log(
@@ -225,8 +235,16 @@ wss.on("connection", (ws: WebSocket) => {
       //broadcast potato passed
       broadcast(clientData.roomId, {
         type: "POTATO_PASSED",
-        room: room,
+        fromPlayerId: clientData.playerId,
+        toPlayerId: targetPlayerId,
         message: `Potato passed to ${targetPlayer.name}!`,
+      });
+      //follow up snapshot
+      broadcast(clientData.roomId, {
+        type: "ROOM_UPDATE",
+        players: room.players,
+        phase: room.phase,
+        potatoHolderId: room.potatoHolderId,
       });
 
       console.log(
@@ -254,12 +272,14 @@ wss.on("connection", (ws: WebSocket) => {
       room.phase = "lobby";
       room.potatoHolderId = null;
       room.endTime = null;
-      
+
       console.log(`Room ${clientData.roomId} reset for new game`);
 
       broadcast(clientData.roomId, {
         type: "ROOM_UPDATE",
-        room: room,
+        players: room.players,
+        phase: room.phase,
+        potatoHolderId: room.potatoHolderId,
         message: "Room reset! Ready for another round?",
       });
     }
@@ -290,8 +310,14 @@ wss.on("connection", (ws: WebSocket) => {
           //broadcast if room has players left
           broadcast(clientData.roomId, {
             type: "GAME_ENDED",
-            room: room,
-            message: playerName + " disconnected",
+            message: `${playerName} disconnected. Game ended.`,
+          });
+
+          broadcast(clientData.roomId, {
+            type: "ROOM_UPDATE",
+            players: room.players,
+            phase: room.phase,
+            potatoHolderId: null,
           });
         }
         room.phase = "ended";
@@ -320,9 +346,15 @@ setInterval(() => {
         //broadcast gg
         broadcast(roomId, {
           type: "GAME_ENDED",
-          room: room,
           loser: loser,
           message: `💥 BOOM! ${loser?.name || "Someone"} lost!`,
+        });
+
+        broadcast(roomId, {
+          type: "ROOM_UPDATE",
+          players: room.players,
+          phase: room.phase,
+          potatoHolderId: null,
         });
 
         console.log(`Game ended in room ${roomId}, loser: ${loser?.name}`);

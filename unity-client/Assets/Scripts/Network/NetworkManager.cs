@@ -64,9 +64,9 @@ public class NetworkManager : MonoBehaviour
 
     void Update()
     {
-        #if !UNITY_WEBGL || UNITY_EDITOR
-            websocket?.DispatchMessageQueue();
-        #endif
+#if !UNITY_WEBGL || UNITY_EDITOR
+        websocket?.DispatchMessageQueue();
+#endif
     }
 
     void HandleMessage(string messageJson)
@@ -87,6 +87,11 @@ public class NetworkManager : MonoBehaviour
                 case "GAME_STARTED":
                 case "POTATO_PASSED":
                 case "GAME_ENDED":
+                    if (message.room == null)
+                    {
+                        Debug.LogWarning("⚠️ Message expected room data but room was null");
+                        return;
+                    }
                     currentRoom = message.room;
                     break;
 
@@ -95,7 +100,8 @@ public class NetworkManager : MonoBehaviour
                     break;
             }
             OnMessageReceived?.Invoke(message);
-        } catch (Exception ex)
+        }
+        catch (Exception ex)
         {
             Debug.LogError($"❌ Failed to parse server message: {ex.Message}");
         }
@@ -117,7 +123,7 @@ public class NetworkManager : MonoBehaviour
         SendMessage(new StartGameMessage());
     }
 
-    public void PassPotato (string targetPlayerId)
+    public void PassPotato(string targetPlayerId)
     {
         PassPotatoMessage message = new PassPotatoMessage
         {

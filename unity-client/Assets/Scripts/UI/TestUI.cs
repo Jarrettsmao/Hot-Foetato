@@ -24,6 +24,10 @@ public class TestUI : MonoBehaviour
         joinButton.onClick.AddListener(OnJoinClicked);
         startButton.onClick.AddListener(OnStartClicked);
 
+        //disable buttons on start
+        joinButton.interactable = false;
+        startButton.interactable = false;
+
         //listen to network events
         nm.OnConnected += OnConnected;
         nm.OnMessageReceived += OnMessageReceived;
@@ -34,6 +38,7 @@ public class TestUI : MonoBehaviour
     async void OnConnectClicked()
     {
         UpdateStatus("Connecting...");
+        connectButton.interactable = false;
         await nm.Connect();
     }
 
@@ -56,6 +61,7 @@ public class TestUI : MonoBehaviour
 
         nm.JoinRoom(roomId, playerName);
         UpdateStatus($"Joining room {roomId} as {playerName}...");
+        joinButton.interactable = false;
     }
 
     void OnStartClicked()
@@ -68,7 +74,7 @@ public class TestUI : MonoBehaviour
         switch (message.type)
         {
             case "JOIN_SUCCESS":
-                UpdateStatus($"Joined room {message.room.roomId} successfully!");
+                UpdateStatus($"Joined room successfully!");
                 startButton.interactable = true;
                 break;
 
@@ -78,6 +84,7 @@ public class TestUI : MonoBehaviour
 
             case "GAME_STARTED":
                 UpdateStatus("Game started!");
+                startButton.interactable = false;
                 break;
 
             case "ERROR":

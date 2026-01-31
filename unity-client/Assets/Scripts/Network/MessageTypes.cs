@@ -4,7 +4,6 @@ using System.Collections.Generic;
 public class Player
 {
     public string id;
-    
     public string name;
     public bool connected;
 }
@@ -15,12 +14,13 @@ public class GameRoom
     public List<Player> players;
     public string potatoHolderId;
     public string phase;
+    public long? endtime;
+    public int maxPlayers;
 }
 
 public class ServerMessage
 {
     public string type;
-    public GameRoom room;
     public string message;
     public Player loser;
     public string playerId;
@@ -50,4 +50,12 @@ public class PassPotatoMessage
 public class PlayAgainMessage
 {
     public string type = "PLAY_AGAIN";
+}
+
+public class RoomUpdateMessage
+{
+    public string type = "ROOM_UPDATE";
+    public List<Player> players;
+    public string phase;
+    public string potatoHolderId;
 }
