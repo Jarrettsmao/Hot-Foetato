@@ -7,6 +7,7 @@ public class Player
     public string id;
     public string name;
     public bool connected;
+    public bool isHost;
 }
 
 [Serializable]
@@ -18,6 +19,7 @@ public class GameRoom
     public string phase;
     public long endTime;
     public int maxPlayers;
+    public string hostId;
 }
 
 [Serializable]
@@ -30,6 +32,7 @@ public class ServerMessage
     public string playerId;
     public string fromPlayerId;
     public string toPlayerId;
+    public string newHostId;
 }
 
 //Outgoing message classes

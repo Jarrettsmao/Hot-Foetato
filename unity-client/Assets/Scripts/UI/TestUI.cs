@@ -119,10 +119,28 @@ public class TestUI : MonoBehaviour
             case "JOIN_SUCCESS":
                 UpdateStatus($"Joined room {message.room.roomId} successfully!");
                 UpdateRoomDisplay(message.room);
+                //Show if you're host
+                if (message.room.hostId == nm.MyPlayerId)
+                {
+                    UpdateStatus("👑 You are the host! You can start the game.");
+                }
                 break;
 
             case "ROOM_UPDATE":
                 UpdatePlayerList(message.room);
+                UpdateRoomDisplay(message.room);
+                if (!string.IsNullOrEmpty(message.message))
+                {
+                    UpdateStatus(message.message);
+                }
+                break;
+
+            case "HOST_TRANSFERRED":
+                UpdateRoomDisplay(message.room);
+                if (message.newHostId == nm.MyPlayerId)
+                {
+                    UpdateStatus("👑 You are the new host!");
+                }
                 if (!string.IsNullOrEmpty(message.message))
                 {
                     UpdateStatus(message.message);
@@ -159,8 +177,17 @@ public class TestUI : MonoBehaviour
     {
         if (room == null)
         {
+            Debug.LogWarning("UpdateRoomDisplay: room is null");
             roomInfoText.text = "Not in a room.";
             playersText.text = "";
+            return;
+        }
+
+        if (room.players == null)
+        {
+            Debug.LogWarning("UpdateRoomDisplay: room.players is null");
+            roomInfoText.text = $"Room: {room.roomId}";
+            playersText.text = "Loading players...";
             return;
         }
 
@@ -172,8 +199,13 @@ public class TestUI : MonoBehaviour
         foreach (var player in room.players)
         {
             string line = "";
+            // Host indicator
+            if (player.isHost)
+            {
+                line += "👑 ";
+            }
             // Potato indicator
-            if (room.potatoHolderId == player.id)
+            else if (room.potatoHolderId == player.id)
             {
                 line += "🥔 ";
             }
@@ -196,13 +228,33 @@ public class TestUI : MonoBehaviour
 
         playersText.text = playerList;
 
+        bool amIHost = room.hostId == nm.MyPlayerId;
         //Update start button
-        bool canStart = room.phase == "lobby" && room.players.Count >= 2;
+        bool canStart = amIHost && room.phase == "lobby" && room.players.Count >= 2;
+        Debug.Log($"Can start: {canStart} (Am I host: {amIHost}, Phase: {room.phase}, Players: {room.players.Count})");
         startButton.interactable = canStart;
 
+        // Only enable play again if I'm host
+        if (room.phase == "ended")
+        {
+            playAgainButton.interactable = amIHost;
+        }
+        else
+        {
+            playAgainButton.interactable = false;
+        }
+
+        // Status message
         if (room.phase == "lobby" && room.players.Count < 2)
         {
-            UpdateStatus($"Waiting for players to join... ({room.players.Count}/2)");
+            if (amIHost)
+            {
+                UpdateStatus($"👑 You're the host! Waiting for players... ({room.players.Count}/2)");
+            }
+            else
+            {
+                UpdateStatus($"Waiting for host to start... ({room.players.Count}/2)");
+            }
         }
     }
 
@@ -232,7 +284,7 @@ public class TestUI : MonoBehaviour
             //Catpture player ID
             string targetId = player.id;
             btn.onClick.AddListener(() => OnPassButtonClicked(targetId, player.name));
-            
+
             activePassButtons.Add(btnObj);
         }
     }

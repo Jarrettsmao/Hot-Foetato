@@ -82,6 +82,11 @@ public class NetworkManager : MonoBehaviour
                     MyPlayerId = message.playerId;
                     CurrentRoom = message.room;
                     Debug.Log($"🆔 My Player ID: {MyPlayerId}");
+
+                    if (message.room.hostId == MyPlayerId)
+                    {
+                        Debug.Log("👑 I am the host");
+                    }
                     break;
 
                 case "ROOM_UPDATE":
@@ -100,7 +105,16 @@ public class NetworkManager : MonoBehaviour
                     Debug.Log($"💥 Game ended! Loser: {message.loser?.name}");
                     CurrentRoom = message.room;
                     break;
-
+                case "HOST_TRANSFERRED":
+                    CurrentRoom = message.room;
+                    if (message.newHostId == MyPlayerId)
+                    {
+                        Debug.Log("👑 You are the new host");
+                    } else
+                    {
+                        Debug.Log($"👑 New host is player {message.newHostId}");
+                    }
+                    break;
                 case "ERROR":
                     Debug.LogWarning($"⚠️ Server Error: {message.message}");
                     break;

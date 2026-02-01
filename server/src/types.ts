@@ -3,6 +3,7 @@ export type Player = {
     id: string;
     name: string;
     connected: boolean;
+    isHost: boolean;
 };
 
 export type GamePhase = "lobby" | "playing" | "ended";
@@ -14,6 +15,7 @@ export type GameRoom = {
     phase: GamePhase;
     endTime: number | null;
     maxPlayers: number;
+    hostId: string;
 };
 
 export type ClientData = {

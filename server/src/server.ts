@@ -68,7 +68,9 @@ wss.on("connection", (ws: WebSocket) => {
           potatoHolderId: null,
           endTime: null,
           maxPlayers: MAX_PLAYERS,
+          hostId: playerId,
         });
+        console.log(`Room: ${roomId}, host: ${playerName}`);
       }
 
       //add player
@@ -110,10 +112,12 @@ wss.on("connection", (ws: WebSocket) => {
         return;
       }
 
+      const isHost = room.hostId === playerId;
       room.players.push({
         id: playerId,
         name: playerName,
         connected: true,
+        isHost: isHost,
       });
 
       //track this connection
@@ -142,7 +146,16 @@ wss.on("connection", (ws: WebSocket) => {
       }
 
       const room = rooms.get(clientData.roomId);
-      if (!room) {
+      if (!room) return;
+
+      //check if sender is host
+      if (room.hostId !== clientData.playerId) {
+        ws.send(
+          JSON.stringify({
+            type: "ERROR",
+            message: "Only the host can start the game",
+          }),
+        );
         return;
       }
 
@@ -244,6 +257,17 @@ wss.on("connection", (ws: WebSocket) => {
       const room = rooms.get(clientData.roomId);
       if (!room) return;
 
+      //check if sender is host
+      if (room.hostId !== clientData.playerId) {
+        ws.send(
+          JSON.stringify({
+            type: "ERROR",
+            message: "Only the host can reset the game",
+          }),
+        );
+        return;
+      }
+
       //only allow reset if game is ended
       if (room.phase !== "ended") {
         ws.send(
@@ -288,20 +312,38 @@ wss.on("connection", (ws: WebSocket) => {
     const playerName = disconnectedPlayer
       ? disconnectedPlayer.name
       : "Unknown Player";
+    const wasHost = room.hostId === clientData.playerId;
 
     // Start a grace period timer
     const timer = setTimeout(() => {
-      // Only remove player if they haven't reconnected
-      room.players = room.players.filter((p) => p.id !== clientData.playerId);
+      const stillInRoom = room.players.find(p => p.id === clientData.playerId);
+      if (stillInRoom) {
+        room.players = room.players.filter((p) => p.id !== clientData.playerId);
+      }
+
+      if (wasHost && room.players.length > 0) {
+        const newHost = room.players[0];
+        room.hostId = newHost.id;
+        newHost.isHost = true;
+
+        console.log(`New host in room ${clientData.roomId} is ${newHost.name}`);
+
+        broadcast(clientData.roomId, {
+          type: "HOST_TRANSFERRED",
+          newHostId: newHost.id,
+          room: room,
+          message: `${playerName} has left. ${newHost.name} is now the host`,
+        });
+      }
 
       if (room.players.length === 0) {
         rooms.delete(clientData.roomId);
         console.log(`Room ${clientData.roomId} deleted (empty)`);
-      } else {
+      } else if (!wasHost){
         broadcast(clientData.roomId, {
           type: "ROOM_UPDATE",
           room: room,
-          message: playerName + " disconnected",
+          message: `${playerName} has disconnected`,
         });
       }
 
