@@ -15,8 +15,8 @@ public class NetworkManager : MonoBehaviour
     public event Action OnConnected;
     public event Action OnDisconnected;
 
-    public string myPlayerId { get; private set; }
-    public GameRoom currentRoom { get; private set; }
+    public string MyPlayerId { get; private set; }
+    public GameRoom CurrentRoom { get; private set; }
 
     void Awake()
     {
@@ -79,16 +79,26 @@ public class NetworkManager : MonoBehaviour
             switch (message.type)
             {
                 case "JOIN_SUCCESS":
-                    myPlayerId = message.playerId;
-                    Debug.Log($"🆔 My Player ID: {myPlayerId}");
+                    MyPlayerId = message.playerId;
+                    CurrentRoom = message.room;
+                    Debug.Log($"🆔 My Player ID: {MyPlayerId}");
                     break;
 
                 case "ROOM_UPDATE":
+                    CurrentRoom = message.room;
+                    Debug.Log("📋 Room updated");
+                    break;
                 case "GAME_STARTED":
+                    CurrentRoom = message.room;
+                    Debug.Log("🎮 Game started");
+                    break;
                 case "POTATO_PASSED":
+                    CurrentRoom = message.room;
+                    Debug.Log("🥔 Potato passed");
+                    break;
                 case "GAME_ENDED":
-                    Debug.Log("sending game ended");
-                    currentRoom = message.room;
+                    Debug.Log($"💥 Game ended! Loser: {message.loser?.name}");
+                    CurrentRoom = message.room;
                     break;
 
                 case "ERROR":

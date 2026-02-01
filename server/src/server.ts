@@ -26,6 +26,10 @@ function broadcast(roomId: string, message: unknown) {
 wss.on("connection", (ws: WebSocket) => {
   console.log("Client connected");
 
+  ws.on("error", (error) => {
+    console.error("❌ WebSocket error:", error);
+  });
+
   ws.on("message", (data) => {
     const message = JSON.parse(data.toString());
 
@@ -58,7 +62,7 @@ wss.on("connection", (ws: WebSocket) => {
       //create room if doesn't exist
       if (!rooms.has(roomId)) {
         rooms.set(roomId, {
-          id: roomId,
+          roomId: roomId,
           players: [],
           phase: "lobby",
           potatoHolderId: null,
@@ -127,7 +131,7 @@ wss.on("connection", (ws: WebSocket) => {
         JSON.stringify({
           type: "JOIN_SUCCESS",
           playerId,
-          roomId,
+          room: room,
         }),
       );
     } else if (message.type === "START_GAME") {
@@ -171,12 +175,6 @@ wss.on("connection", (ws: WebSocket) => {
         type: "GAME_STARTED",
         room: room,
         message: `Game started! ${room.players.find((p) => p.id === room.potatoHolderId)?.name} has the potato!`,
-      });
-
-      broadcast(clientData.roomId, {
-        type: "ROOM_UPDATE",
-        room: room,
-        message: "Sending room update",
       });
 
       console.log(
@@ -236,12 +234,6 @@ wss.on("connection", (ws: WebSocket) => {
         message: `Potato passed to ${targetPlayer.name}!`,
       });
 
-      broadcast(clientData.roomId, {
-        type: "ROOM_UPDATE",
-        room: room,
-        message: "Sending room update",
-      });
-
       console.log(
         `Potato passed to ${targetPlayer.name} in room ${clientData.roomId}`,
       );
@@ -297,7 +289,7 @@ wss.on("connection", (ws: WebSocket) => {
       ? disconnectedPlayer.name
       : "Unknown Player";
 
-    // Start a grace period timer (e.g., 5 seconds)
+    // Start a grace period timer
     const timer = setTimeout(() => {
       // Only remove player if they haven't reconnected
       room.players = room.players.filter((p) => p.id !== clientData.playerId);
