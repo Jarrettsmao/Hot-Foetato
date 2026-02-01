@@ -278,46 +278,45 @@ wss.on("connection", (ws: WebSocket) => {
     }
   });
 
+  const disconnectTimers = new Map<string, NodeJS.Timeout>();
+  const timerDuration: number = 5000; // 5 seconds
+
   ws.on("close", () => {
     console.log("Client disconnected");
 
     const clientData = clients.get(ws);
+    if (!clientData) return;
 
-    if (clientData) {
-      const room = rooms.get(clientData.roomId);
-      if (room) {
-        const disconnectedPlayer = room.players.find(
-          (p) => p.id === clientData.playerId,
-        );
-        const playerName = disconnectedPlayer
-          ? disconnectedPlayer.name
-          : "Unknown Player";
+    const room = rooms.get(clientData.roomId);
+    if (!room) return;
 
-        room.players = room.players.filter((p) => p.id !== clientData.playerId);
+    const disconnectedPlayer = room.players.find(
+      (p) => p.id === clientData.playerId,
+    );
+    const playerName = disconnectedPlayer
+      ? disconnectedPlayer.name
+      : "Unknown Player";
 
-        if (room.players.length === 0) {
-          //if no players left, remove room
-          rooms.delete(clientData.roomId);
-          console.log(`Room ${clientData.roomId} deleted (empty)`);
-        } else {
-          //broadcast if room has players left
-          broadcast(clientData.roomId, {
-            type: "GAME_ENDED",
-            room: room,
-            message: playerName + " disconnected",
-          });
+    // Start a grace period timer (e.g., 5 seconds)
+    const timer = setTimeout(() => {
+      // Only remove player if they haven't reconnected
+      room.players = room.players.filter((p) => p.id !== clientData.playerId);
 
-          broadcast(clientData.roomId, {
-            type: "ROOM_UPDATE",
-            room: room,
-            message: "Sending room update",
-          });
-        }
+      if (room.players.length === 0) {
+        rooms.delete(clientData.roomId);
+        console.log(`Room ${clientData.roomId} deleted (empty)`);
+      } else {
+        broadcast(clientData.roomId, {
+          type: "ROOM_UPDATE",
+          room: room,
+          message: playerName + " disconnected",
+        });
       }
 
-      //remove from clients map
-      clients.delete(ws);
-    }
+      disconnectTimers.delete(clientData.playerId);
+    }, timerDuration);
+
+    disconnectTimers.set(clientData.playerId, timer);
   });
 });
 
