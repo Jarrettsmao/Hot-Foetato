@@ -74,7 +74,7 @@ public class TestUI : MonoBehaviour
         switch (message.type)
         {
             case "JOIN_SUCCESS":
-                UpdateStatus($"Joined room successfully!");
+                UpdateStatus($"Joined room {message.room.roomId} successfully!");
                 startButton.interactable = true;
                 break;
 

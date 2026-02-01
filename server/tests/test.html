@@ -53,9 +53,9 @@
         addLog(1, '📩 ' + JSON.stringify(data, null, 2));
         
         // ← EXTRACT PLAYER 1'S ID FROM ROOM_UPDATE
-        if (data.type === 'ROOM_UPDATE' && data.players) {
+        if (data.type === 'ROOM_UPDATE' && data.room && data.room.players) {
           // Find Alice in the players list
-          const alicePlayer = data.players.find(p => p.name === 'Alice');
+          const alicePlayer = data.room.players.find(p => p.name === 'Alice');
           if (alicePlayer && !player1Id) {
             player1Id = alicePlayer.id;
             document.getElementById('player1-id').textContent = `Player ID: ${player1Id}`;
@@ -63,7 +63,7 @@
           }
           
           // Also save Player 2's ID if they're in the room
-          const bobPlayer = data.players.find(p => p.name === 'Bob');
+          const bobPlayer = data.room.players.find(p => p.name === 'Bob');
           if (bobPlayer && !player2Id) {
             player2Id = bobPlayer.id;
             addLog(1, `🆔 Found Player 2's ID: ${player2Id}`);
@@ -84,7 +84,7 @@
       if (ws1 && ws1.readyState === WebSocket.OPEN) {
         ws1.send(JSON.stringify({
           type: 'JOIN_ROOM',
-          roomId: 'test123',
+          roomId: 'ABC123',
           playerName: 'Alice'
         }));
         addLog(1, '📤 Sent JOIN_ROOM as Alice');
@@ -133,9 +133,9 @@
         addLog(2, '📩 ' + JSON.stringify(data, null, 2));
         
         // ← EXTRACT PLAYER 2'S ID FROM ROOM_UPDATE
-        if (data.type === 'ROOM_UPDATE' && data.players) {
+        if (data.type === 'ROOM_UPDATE' && data.room && data.room.players) {
           // Find Bob in the players list
-          const bobPlayer = data.players.find(p => p.name === 'Bob');
+          const bobPlayer = data.room.players.find(p => p.name === 'Bob');
           if (bobPlayer && !player2Id) {
             player2Id = bobPlayer.id;
             document.getElementById('player2-id').textContent = `Player ID: ${player2Id}`;
@@ -143,7 +143,7 @@
           }
           
           // Also save Player 1's ID if they're in the room
-          const alicePlayer = data.players.find(p => p.name === 'Alice');
+          const alicePlayer = data.room.players.find(p => p.name === 'Alice');
           if (alicePlayer && !player1Id) {
             player1Id = alicePlayer.id;
             addLog(2, `🆔 Found Player 1's ID: ${player1Id}`);
@@ -164,7 +164,7 @@
       if (ws2 && ws2.readyState === WebSocket.OPEN) {
         ws2.send(JSON.stringify({
           type: 'JOIN_ROOM',
-          roomId: 'test123',
+          roomId: 'ABC123',
           playerName: 'Bob'
         }));
         addLog(2, '📤 Sent JOIN_ROOM as Bob');

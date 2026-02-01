@@ -8,7 +8,7 @@ export type Player = {
 export type GamePhase = "lobby" | "playing" | "ended";
 
 export type GameRoom = {
-    id: string;
+    roomId: string;
     players: Player[];
     potatoHolderId: string | null;
     phase: GamePhase;

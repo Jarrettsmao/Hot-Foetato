@@ -87,11 +87,7 @@ public class NetworkManager : MonoBehaviour
                 case "GAME_STARTED":
                 case "POTATO_PASSED":
                 case "GAME_ENDED":
-                    if (message.room == null)
-                    {
-                        Debug.LogWarning("⚠️ Message expected room data but room was null");
-                        return;
-                    }
+                    Debug.Log("sending game ended");
                     currentRoom = message.room;
                     break;
 

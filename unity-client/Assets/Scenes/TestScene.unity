@@ -1699,8 +1699,8 @@ MonoBehaviour:
   connectButton: {fileID: 1809577747}
   joinButton: {fileID: 1953696860}
   startButton: {fileID: 1435637686}
-  statusText: {fileID: 0}
-  playersText: {fileID: 0}
+  statusText: {fileID: 1493776205}
+  playersText: {fileID: 1384822520}
 --- !u!4 &1050037432
 Transform:
   m_ObjectHideFlags: 0
