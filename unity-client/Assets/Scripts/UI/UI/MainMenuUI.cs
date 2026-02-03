@@ -25,8 +25,7 @@ public class MainMenu : MonoBehaviour
         {
             //go to lobby
             SceneManager.LoadScene("Lobby");
-            Debug.Log("Loading Lobby Scene");
-            
+
             //Connect to server
             await NetworkManager.Instance.Connect();
         }
