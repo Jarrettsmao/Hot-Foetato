@@ -49,11 +49,11 @@ wss.on("connection", (ws: WebSocket) => {
       }
 
       //check name length
-      if (playerName.length < 2 || playerName.length > 20) {
+      if (playerName.length < 2 || playerName.length > 17) {
         ws.send(
           JSON.stringify({
             type: "ERROR",
-            message: "Player name must be between 1 and 20 characters",
+            message: "Player name must be between 2 and 17 characters",
           }),
         );
         return;

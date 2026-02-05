@@ -2,6 +2,9 @@ using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Collections;
+using System.Runtime.InteropServices;
+using System;
 
 public class MainMenu : MonoBehaviour
 {
@@ -9,10 +12,16 @@ public class MainMenu : MonoBehaviour
     [SerializeField] private Button connectButton;
     [SerializeField] private TMP_Text statusText;
 
+    private NetworkManager nm;
+
     void Start()
     {
+        nm = NetworkManager.Instance;
         connectButton.onClick.AddListener(OnConnectClicked);
         statusText.enabled = false;
+
+        nm.OnConnected += OnConnected;
+        nm.OnDisconnected += OnDisconnected;
     }
 
     async void OnConnectClicked()
@@ -23,19 +32,26 @@ public class MainMenu : MonoBehaviour
 
         try
         {
-            //go to lobby
-            SceneManager.LoadScene("Lobby");
-
-            //Connect to server
-            await NetworkManager.Instance.Connect();
+            await nm.Connect(); // await the Task
         }
-        catch (System.Exception ex)
+        catch (Exception ex)
         {
-            //Failed - show error and re enable button
-            connectButton.interactable = true;
-            statusText.text = $"Connection failed.";
             Debug.LogError($"Connection failed: {ex.Message}");
-            return;
+            OnDisconnected();
         }
+    }
+
+
+    private void OnConnected()
+    {
+        nm.OnConnected -= OnConnected;
+        SceneManager.LoadScene("Lobby");
+    }
+
+    private void OnDisconnected()
+    {
+        nm.OnDisconnected -= OnDisconnected;
+        connectButton.interactable = true;
+        statusText.text = "Connection failed.";
     }
 }
