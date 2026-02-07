@@ -2,6 +2,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
+using UnityEngine.SceneManagement;
 // using System.Diagnostics;
 
 public class LobbyUI : MonoBehaviour
@@ -11,6 +12,10 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Button joinCreateButton;
     [SerializeField] private Button leaveButton;
     [SerializeField] private Button randomButton;
+
+    [Header("Ready Button")]
+    [SerializeField] private Button readyButton;
+    [SerializeField] private Button unreadyButton;
 
     [Header("Input Fields")]
     [SerializeField] private TMP_InputField playerNameInputField;
@@ -36,9 +41,13 @@ public class LobbyUI : MonoBehaviour
         startButton.onClick.AddListener(OnStartClicked);
         leaveButton.onClick.AddListener(OnLeaveClicked);
         randomButton.onClick.AddListener(OnRandomClicked);
+        readyButton.onClick.AddListener(OnReadyClicked);
+        unreadyButton.onClick.AddListener(OnReadyClicked);
 
         startButton.gameObject.SetActive(false);
         leaveButton.gameObject.SetActive(false);
+        readyButton.gameObject.SetActive(false);
+        unreadyButton.gameObject.SetActive(false);
 
         // HideAllPlayerProfiles(); 
     }
@@ -57,8 +66,7 @@ public class LobbyUI : MonoBehaviour
         {
             case "JOIN_SUCCESS":
                 Debug.Log("✅ Joined room successfully!");
-                UpdatePlayerListTitle();
-                UpdatePlayerList();
+                UpdateUI();
                 joinCreateButton.gameObject.SetActive(false);
                 leaveButton.gameObject.SetActive(true);
                 break;
@@ -67,20 +75,22 @@ public class LobbyUI : MonoBehaviour
                 Debug.Log("🚪 Left room successfully");
                 joinCreateButton.gameObject.SetActive(true);
                 leaveButton.gameObject.SetActive(false);
-                startButton.gameObject.SetActive(false);
-                UpdatePlayerListTitle();
-                UpdatePlayerList();
+                UpdateUI();
+                break;
+
+            case "HOST_TRANSFERRED":
+                Debug.Log("👑 Host transferred");
+                UpdateUI();
                 break;
 
             case "ROOM_UPDATE":
                 Debug.Log("📋 Room updated");
-                UpdatePlayerListTitle();
-                UpdatePlayerList();
+                UpdateUI();
                 break;
 
             case "GAME_STARTED":
                 Debug.Log("🎮 Game started!");
-
+                SceneManager.LoadScene("Game");
                 break;
 
             case "ERROR":
@@ -89,6 +99,7 @@ public class LobbyUI : MonoBehaviour
         }
     }
 
+    //update methods
     void UpdatePlayerList()
     {
         ClearPlayerList();
@@ -109,6 +120,20 @@ public class LobbyUI : MonoBehaviour
             {
                 profile.SetupProfile(player);
 
+                if (player.isHost)
+                {
+                    profile.SetStatus("Host");
+                }
+                else if (player.isReady)
+                {
+                    profile.SetStatus("Ready");
+                }
+                else
+                {
+                    profile.SetStatus("Waiting");
+                }
+
+                //assign potato sprite
                 if (potatoSprites != null && potatoSprites.Length > 0)
                 {
                     int spriteIndex = i % potatoSprites.Length; //wraps around if >4 players
@@ -118,7 +143,7 @@ public class LobbyUI : MonoBehaviour
                 if (player.id == nm.MyPlayerId)
                 {
                     profile.SetAsLocalPlayer(true);
-                } 
+                }
 
                 playerProfiles.Add(profile);
             }
@@ -126,77 +151,6 @@ public class LobbyUI : MonoBehaviour
 
         UpdatePlayerListTitle();
     }
-
-    //On button click
-    void OnJoinCreateClicked()
-    {
-        Debug.Log("Join Status Clicked");
-
-        string roomId = roomIdInputField.text;
-        string playerName = playerNameInputField.text;
-
-        if (string.IsNullOrEmpty(playerName) || string.IsNullOrEmpty(roomId))
-        {
-            Debug.LogWarning("Player name and room ID are required to join or create a room.");
-            return;
-        }
-
-        nm.JoinRoom(roomId, playerName);
-    }
-
-    void OnStartClicked()
-    {
-        Debug.Log("Start Clicked");
-        // Implement start game logic here
-    }
-
-    void OnLeaveClicked()
-    {
-        Debug.Log("Leave Clicked");
-        nm.LeaveRoom();
-    }
-
-    void OnRandomClicked()
-    {
-        Debug.Log("Random Clicked");
-        string roomText = GenerateRoomCode();
-        roomIdInputField.text = roomText;
-    }
-
-    //Header Methods 
-    private string GenerateRoomCode()
-    {
-        const string chars = "ABCEDGHIJKLMNOPQRSTUVWXYZ0123456789";
-        const int length = 6;
-
-        string code = "";
-        for (int i = 0; i < length; i++)
-        {
-            code += chars[Random.Range(0, chars.Length)];
-        }
-
-        return code;
-    }
-
-    private void ClearPlayerList()
-    {
-        foreach (PlayerProfile profile in playerProfiles)
-        {
-            Destroy(profile.gameObject);
-        }
-        playerProfiles.Clear();
-    }
-
-    // private void HideAllPlayerProfiles()
-    // {
-    //     for (int i = 0; i < playerProfileContainer.childCount; i++)
-    //     {
-    //         GameObject profile = playerProfileContainer.GetChild(i).gameObject;
-    //         playerProfiles.Add(profile);
-    //         profile.SetActive(false);
-
-    //     }
-    // }
 
     private void UpdatePlayerListTitle()
     {
@@ -225,10 +179,169 @@ public class LobbyUI : MonoBehaviour
 
         playerListTitleText.text = $"Room {nm.CurrentRoom.roomId} | Players ({playerCount}/{maxPlayers})";
 
-        // Update player profiles display
-        // UpdatePlayerProfiles(playerCount);
-
         Debug.Log($"✅ Updated player list: {playerCount}/{maxPlayers}");
+    }
+
+    private void UpdateStartButton()
+    {
+        // Default: OFF
+        startButton.gameObject.SetActive(false);
+
+        if (nm.CurrentRoom == null || nm.CurrentRoom.players == null)
+            return;
+
+        if (nm.CurrentRoom.players.Count < 2)
+            return;
+
+        Player localPlayer = nm.CurrentRoom.players.Find(p => p.id == nm.MyPlayerId);
+        if (localPlayer == null || !localPlayer.isHost)
+            return;
+
+        if (!CheckAllReady())
+            return;
+
+        // Only reachable if ALL conditions pass
+        startButton.gameObject.SetActive(true);
+    }
+
+
+    private void UpdateReadyButton()
+    {
+        readyButton.gameObject.SetActive(false);
+        unreadyButton.gameObject.SetActive(false);
+
+        if (nm.CurrentRoom == null || nm.CurrentRoom.players == null)
+            return;
+
+        Player localPlayer = nm.CurrentRoom.players
+            .Find(p => p.id == nm.MyPlayerId);
+
+        if (localPlayer == null)
+            return;
+
+        // Host should never see ready button
+        if (localPlayer.isHost)
+            return;
+
+        // Only show when enough players
+        if (nm.CurrentRoom.players.Count < 2)
+            return;
+
+        readyButton.gameObject.SetActive(true);
+
+        if (localPlayer.isReady)
+        {
+            unreadyButton.gameObject.SetActive(true);
+        } else
+        {
+            readyButton.gameObject.SetActive(true);
+        }
+    }
+
+    //On button click
+    void OnJoinCreateClicked()
+    {
+        Debug.Log("Join Status Clicked");
+
+        string roomId = roomIdInputField.text;
+        string playerName = playerNameInputField.text;
+
+        if (string.IsNullOrEmpty(playerName) || string.IsNullOrEmpty(roomId))
+        {
+            Debug.LogWarning("Player name and room ID are required to join or create a room.");
+            return;
+        }
+
+        ControlInputUI(false);
+
+        nm.JoinRoom(roomId, playerName);
+    }
+
+    void OnStartClicked()
+    {
+        Debug.Log("Start Clicked");
+
+        nm.StartGame();
+    }
+
+    void OnLeaveClicked()
+    {
+        Debug.Log("Leave Clicked");
+        nm.LeaveRoom();
+        ControlInputUI(true);
+    }
+
+    void OnRandomClicked()
+    {
+        Debug.Log("Random Clicked");
+        string roomText = GenerateRoomCode();
+        roomIdInputField.text = roomText;
+    }
+
+    void OnReadyClicked()
+    {
+        Debug.Log("Ready Clicked");
+        nm.ToggleReady();
+
+    }
+
+    //helper Methods 
+    private string GenerateRoomCode()
+    {
+        const string chars = "ABCEDGHIJKLMNOPQRSTUVWXYZ0123456789";
+        const int length = 6;
+
+        string code = "";
+        for (int i = 0; i < length; i++)
+        {
+            code += chars[Random.Range(0, chars.Length)];
+        }
+
+        return code;
+    }
+
+    private void ClearPlayerList()
+    {
+        foreach (PlayerProfile profile in playerProfiles)
+        {
+            Destroy(profile.gameObject);
+        }
+        playerProfiles.Clear();
+    }
+
+    private void UpdateUI()
+    {
+        UpdatePlayerListTitle();
+        UpdatePlayerList();
+        UpdateStartButton();
+        UpdateReadyButton();
+    }
+
+    private void ControlInputUI(bool status)
+    {
+        roomIdInputField.interactable = status;
+        playerNameInputField.interactable = status;
+        randomButton.interactable = status;
+
+    }
+
+    private bool CheckAllReady()
+    {
+        bool allReady = true;
+        foreach (Player player in nm.CurrentRoom.players)
+        {
+            if (player.isHost)
+            {
+                continue;
+            }
+            if (!player.isReady)
+            {
+                allReady = false;
+                break;
+            }
+        }
+
+        return allReady;
     }
 }
 

@@ -118,6 +118,7 @@ wss.on("connection", (ws: WebSocket) => {
         name: playerName,
         connected: true,
         isHost: isHost,
+        isReady: false
       });
 
       //track this connection
@@ -186,6 +187,34 @@ wss.on("connection", (ws: WebSocket) => {
         }),
       )
 
+    }else if (message.type === "TOGGLE_READY"){
+      const clientData =clients.get(ws);
+      if (!clientData) return;
+
+      const room = rooms.get(clientData.roomId);
+      if (!room) return;
+
+      const player = room.players.find((p) => p.id === clientData.playerId);
+      if (!player) return;
+
+      if(player.id === room.hostId){
+        ws.send(JSON.stringify({
+          type: "ERROR",
+          message: "Host doesn't need to ready up",
+        }));
+        return;
+      }
+
+      player.isReady = !player.isReady;
+
+      console.log(`${player.name} is now ${player.isReady ? 'ready' : 'not ready'}`);
+
+      broadcast(clientData.roomId, {
+        type: "ROOM_UPDATE",
+        room: room,
+        message: `${player.name} is ${player.isReady ? 'ready' : 'not ready'}`,
+      });
+    
     } else if (message.type === "START_GAME") {
       const clientData = clients.get(ws);
 

@@ -172,6 +172,12 @@ public class NetworkManager : MonoBehaviour
         Debug.Log("Left the room.");
     }
 
+    public void ToggleReady()
+    {
+        SendMessage(new ToggleReadyMessage());
+        Debug.Log("📤 Toggling ready status");
+    }
+
     //helper function to send any message
     void SendMessage(object message)
     {

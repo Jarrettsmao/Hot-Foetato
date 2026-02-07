@@ -18,7 +18,7 @@ public class PlayerProfile : MonoBehaviour
         playerId = player.id;
         SetUsername(player.name);
         SetHost(player.isHost);
-        SetStatus("Waiting");
+        SetStatus("Not Ready");
         Debug.Log($"✅ Set up profile for player: {player.name} (ID: {player.id}, Host: {player.isHost}, Connected: {player.connected})");
     }
 

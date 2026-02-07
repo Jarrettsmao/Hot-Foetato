@@ -4,6 +4,7 @@ export type Player = {
     name: string;
     connected: boolean;
     isHost: boolean;
+    isReady: boolean;
 };
 
 export type GamePhase = "lobby" | "playing" | "ended";

@@ -8,6 +8,7 @@ public class Player
     public string name;
     public bool connected;
     public bool isHost;
+    public bool isReady;
 }
 
 [Serializable]
@@ -64,4 +65,11 @@ public class PlayAgainMessage
 public class LeaveRoomMessage
 {
     public string type = "LEAVE_ROOM";
+}
+
+[Serializable]
+
+public class ToggleReadyMessage
+{
+    public string type = "TOGGLE_READY";
 }
