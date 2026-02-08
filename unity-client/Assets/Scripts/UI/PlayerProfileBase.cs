@@ -7,6 +7,7 @@ public class PlayerProfileBase : MonoBehaviour
     [Header("Common UI")]
     [SerializeField] protected Image potatoSprite;
     [SerializeField] protected TMP_Text usernameText;
+    [SerializeField] private Image crownIcon;
 
     protected string playerId;
 
@@ -14,6 +15,7 @@ public class PlayerProfileBase : MonoBehaviour
     {
         playerId = player.id;
         SetUsername(player.name);
+        SetHost(player.isHost);
     }
 
     public void SetPotatoIcon(Sprite sprite)
@@ -33,5 +35,13 @@ public class PlayerProfileBase : MonoBehaviour
     public string GetPlayerId()
     {
         return playerId;
+    }
+
+    public void SetHost(bool isHost)
+    {
+        if (crownIcon != null)
+        {
+            crownIcon.gameObject.SetActive(isHost);
+        }
     }
 }

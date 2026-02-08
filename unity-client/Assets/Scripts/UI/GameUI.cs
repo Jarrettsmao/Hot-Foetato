@@ -19,7 +19,7 @@ public class GameUI : MonoBehaviour
     private NetworkManager nm;
     private Transform[] playerPositions;
     private Transform[] bombTargets;
-    private List<PlayerProfile> activeProfiles = new List<PlayerProfile>();
+    private List<GameProfile> activeProfiles = new List<GameProfile>();
 
     void Start()
     {
@@ -60,7 +60,7 @@ public class GameUI : MonoBehaviour
         for (int i = 0; i < players.Count; i++)
         {
             Player player = players[i];
-
+            //caculate display position (make sure you are always on the bottom)
             int displayPosition = (i - yourIndex + players.Count) % players.Count;
 
             if (displayPosition >= playerPositions.Length)
@@ -73,11 +73,15 @@ public class GameUI : MonoBehaviour
                 playerPositions[displayPosition]
             );
 
-            PlayerProfile profile = profileObj.GetComponent<PlayerProfile>();
+            GameProfile profile = profileObj.GetComponent<GameProfile>();
 
             if (profile != null)
             {
-                profile.SetupProfile(player);
+                profile.SetupProfile(player, 0); //starting score
+
+                int spriteIndex = player.potatoIndex;
+                Sprite sprite = potatoSpritesData.GetSprite(spriteIndex);
+                profile.SetPotatoIcon(sprite);
 
                 activeProfiles.Add(profile);
             }

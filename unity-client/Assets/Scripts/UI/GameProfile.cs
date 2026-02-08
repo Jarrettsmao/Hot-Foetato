@@ -16,7 +16,7 @@ public class GameProfile : PlayerProfileBase
     {
         if (scoreText != null)
         {
-            scoreText.text = score.ToString();
+            scoreText.text = "Score: " + score.ToString();
         }
     }
 }
