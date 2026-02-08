@@ -23,6 +23,30 @@ function broadcast(roomId: string, message: unknown) {
   });
 }
 
+function startGame(roomId: string, room: GameRoom) {
+  room.phase = "playing";
+
+  // pick random potato holder
+  const randomIndex = Math.floor(Math.random() * room.players.length);
+  room.potatoHolderId = room.players[randomIndex].id;
+
+  // set random timer
+  const randomDelay =
+    Math.floor(Math.random() * (MAX_TIMER - MIN_TIMER)) + MIN_TIMER;
+
+  room.endTime = Date.now() + randomDelay;
+
+  broadcast(roomId, {
+    type: "GAME_STARTED",
+    room: room,
+    message: `Game started! ${
+      room.players.find((p) => p.id === room.potatoHolderId)?.name
+    } has the potato!`,
+  });
+
+  console.log(`Game started in room ${roomId}, timer: ${randomDelay / 1000}s`);
+}
+
 wss.on("connection", (ws: WebSocket) => {
   console.log("Client connected");
 
@@ -242,7 +266,6 @@ wss.on("connection", (ws: WebSocket) => {
       broadcast(clientData.roomId, {
         type: "GAME_ROOM",
       });
-
     } else if (message.type === "START_GAME") {
       const clientData = clients.get(ws);
 
@@ -276,28 +299,17 @@ wss.on("connection", (ws: WebSocket) => {
         return;
       }
 
-      //start game
-      room.phase = "playing";
+      if (room.phase !== "lobby") {
+        ws.send(
+          JSON.stringify({
+            type: "ERROR",
+            message: "Game already in progress",
+          }),
+        );
+        return;
+      }
 
-      //pick random person to start with potato
-      const randomIndex = Math.floor(Math.random() * room.players.length);
-      room.potatoHolderId = room.players[randomIndex].id;
-
-      //set randomtimer
-      const randomDelay =
-        Math.floor(Math.random() * (MAX_TIMER - MIN_TIMER)) + MIN_TIMER;
-      room.endTime = Date.now() + randomDelay;
-
-      //broadcast game start
-      broadcast(clientData.roomId, {
-        type: "GAME_STARTED",
-        room: room,
-        message: `Game started! ${room.players.find((p) => p.id === room.potatoHolderId)?.name} has the potato!`,
-      });
-
-      console.log(
-        `Game started in room ${clientData.roomId}, timer: ${randomDelay / 1000} seconds`,
-      );
+      startGame(clientData.roomId, room);
     } else if (message.type === "PASS_POTATO") {
       const clientData = clients.get(ws);
       if (!clientData) return;
@@ -391,11 +403,13 @@ wss.on("connection", (ws: WebSocket) => {
 
       console.log(`Room ${clientData.roomId} reset for new game`);
 
-      broadcast(clientData.roomId, {
-        type: "ROOM_UPDATE",
-        room: room,
-        message: "Room reset! Ready for another round?",
-      });
+      // broadcast(clientData.roomId, {
+      //   type: "ROOM_UPDATE",
+      //   room: room,
+      //   message: "Room reset! Ready for another round?",
+      // });
+
+      startGame(clientData.roomId, room);
     }
   });
 
@@ -489,7 +503,7 @@ setInterval(() => {
 }, 100);
 
 function getAvailableSpriteIndex(room) {
-  const used = new Set(room.players.map(p => p.potatoIndex));
+  const used = new Set(room.players.map((p) => p.potatoIndex));
 
   for (let i = 0; i < MAX_PLAYERS; i++) {
     if (!used.has(i)) {
@@ -500,6 +514,5 @@ function getAvailableSpriteIndex(room) {
   // Fallback (should never happen if maxPlayers is enforced)
   return 0;
 }
-
 
 console.log("🚀 WebSocket server running on ws://localhost:8080");
