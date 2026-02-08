@@ -13,6 +13,9 @@ public class GameUI : MonoBehaviour
     [Header("Prefabs")]
     [SerializeField] private GameObject playerProfilePrefab;
 
+    [Header("Potato Sprites")]
+    [SerializeField] private PotatoSpritesData potatoSpritesData;
+
     private NetworkManager nm;
     private Transform[] playerPositions;
     private Transform[] bombTargets;

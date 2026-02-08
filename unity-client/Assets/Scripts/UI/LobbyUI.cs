@@ -28,8 +28,7 @@ public class LobbyUI : MonoBehaviour
     private List<PlayerProfile> playerProfiles = new List<PlayerProfile>();
 
     [Header("Potato Sprites")]
-    [SerializeField] private Sprite[] potatoSprites;
-    private int potatoIndex;
+    [SerializeField] private PotatoSpritesData potatoSpritesData;
     private NetworkManager nm;
 
     void Start()
@@ -132,10 +131,7 @@ public class LobbyUI : MonoBehaviour
                 }
 
                 //assign potato sprite
-                if (potatoSprites != null && potatoSprites.Length > 0)
-                {
-                    profile.SetPotatoIcon(potatoSprites[player.potatoIndex]);
-                }
+                profile.SetPotatoIcon(potatoSpritesData.GetSprite(player.potatoIndex));
 
                 if (player.id == nm.MyPlayerId)
                 {
@@ -252,14 +248,6 @@ public class LobbyUI : MonoBehaviour
 
         ControlInputUI(false);
 
-        // TEMP: assign by join order (future = player choice)
-        // int potatoIndex = 0;
-        // if (nm.CurrentRoom != null && nm.CurrentRoom.players != null)
-        // {
-        //     int playerCount = nm.CurrentRoom.players.Count;
-        //     potatoIndex = playerCount % potatoSprites.Length;
-        // }
-        
         nm.JoinRoom(roomId, playerName, -1);
     }
 

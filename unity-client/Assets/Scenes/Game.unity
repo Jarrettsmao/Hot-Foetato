@@ -576,6 +576,7 @@ MonoBehaviour:
   playerPosLeft: {fileID: 2066250961}
   playerPosRight: {fileID: 1666713109}
   playerProfilePrefab: {fileID: 2886469460556276568, guid: a5dd32ccf80fa70429b03c71202fe2c6, type: 3}
+  potatoSpritesData: {fileID: 11400000, guid: 271a3476f597bf34fb7354702e452f5e, type: 2}
 --- !u!4 &1502273730
 Transform:
   m_ObjectHideFlags: 0

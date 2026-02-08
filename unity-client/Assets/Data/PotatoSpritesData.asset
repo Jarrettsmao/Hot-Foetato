@@ -1,0 +1,19 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e70acc6a6be563d4098c6e1e8bf98901, type: 3}
+  m_Name: PotatoSpritesData
+  m_EditorClassIdentifier: Assembly-CSharp::PotatoSpritesData
+  potatoSprites:
+  - {fileID: 1757756325523041487, guid: 84af886dc32dcac478d2e779d6b125cb, type: 3}
+  - {fileID: 8255191532853501100, guid: afec806f75481d249bcb23704745f2dd, type: 3}
+  - {fileID: 8473203664934166332, guid: fdab919c926e69c478c7b54bc00eb807, type: 3}
+  - {fileID: 1640893251084134161, guid: e3bd535a195d25e46a23487c5155881e, type: 3}

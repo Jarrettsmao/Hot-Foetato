@@ -2501,11 +2501,7 @@ MonoBehaviour:
   playerProfileContainer: {fileID: 613553371}
   playerListTitleText: {fileID: 500849291}
   playerProfilePrefab: {fileID: 5904282836620406367, guid: 409a16a80b227ff43892d443f6ac4ce6, type: 3}
-  potatoSprites:
-  - {fileID: 1757756325523041487, guid: 84af886dc32dcac478d2e779d6b125cb, type: 3}
-  - {fileID: 8255191532853501100, guid: afec806f75481d249bcb23704745f2dd, type: 3}
-  - {fileID: 8473203664934166332, guid: fdab919c926e69c478c7b54bc00eb807, type: 3}
-  - {fileID: 1640893251084134161, guid: e3bd535a195d25e46a23487c5155881e, type: 3}
+  potatoSpritesData: {fileID: 11400000, guid: 271a3476f597bf34fb7354702e452f5e, type: 2}
 --- !u!1 &1179333144
 GameObject:
   m_ObjectHideFlags: 0
