@@ -34,7 +34,7 @@ wss.on("connection", (ws: WebSocket) => {
     const message = JSON.parse(data.toString());
 
     if (message.type === "JOIN_ROOM") {
-      const { roomId, playerName } = message;
+      const { roomId, playerName, potatoIndex } = message;
       const playerId = crypto.randomUUID();
 
       //check required fields
@@ -113,12 +113,15 @@ wss.on("connection", (ws: WebSocket) => {
       }
 
       const isHost = room.hostId === playerId;
+
+      const assignedIndex = getAvailableSpriteIndex(room);
       room.players.push({
         id: playerId,
         name: playerName,
         connected: true,
         isHost: isHost,
-        isReady: false
+        isReady: false,
+        potatoIndex: assignedIndex,
       });
 
       //track this connection
@@ -146,7 +149,9 @@ wss.on("connection", (ws: WebSocket) => {
       const room = rooms.get(clientData.roomId);
       if (!room) return;
 
-      const leavingPlayer = room.players.find((p) => p.id === clientData.playerId);
+      const leavingPlayer = room.players.find(
+        (p) => p.id === clientData.playerId,
+      );
       const playerName = leavingPlayer ? leavingPlayer.name : "Unknown Player";
       const wasHost = room.hostId === clientData.playerId;
 
@@ -185,10 +190,9 @@ wss.on("connection", (ws: WebSocket) => {
           type: "LEAVE_SUCCESS",
           message: "You have left the room",
         }),
-      )
-
-    }else if (message.type === "TOGGLE_READY"){
-      const clientData =clients.get(ws);
+      );
+    } else if (message.type === "TOGGLE_READY") {
+      const clientData = clients.get(ws);
       if (!clientData) return;
 
       const room = rooms.get(clientData.roomId);
@@ -197,24 +201,48 @@ wss.on("connection", (ws: WebSocket) => {
       const player = room.players.find((p) => p.id === clientData.playerId);
       if (!player) return;
 
-      if(player.id === room.hostId){
-        ws.send(JSON.stringify({
-          type: "ERROR",
-          message: "Host doesn't need to ready up",
-        }));
+      if (player.id === room.hostId) {
+        ws.send(
+          JSON.stringify({
+            type: "ERROR",
+            message: "Host doesn't need to ready up",
+          }),
+        );
         return;
       }
 
       player.isReady = !player.isReady;
 
-      console.log(`${player.name} is now ${player.isReady ? 'ready' : 'not ready'}`);
+      console.log(
+        `${player.name} is now ${player.isReady ? "ready" : "not ready"}`,
+      );
 
       broadcast(clientData.roomId, {
         type: "ROOM_UPDATE",
         room: room,
-        message: `${player.name} is ${player.isReady ? 'ready' : 'not ready'}`,
+        message: `${player.name} is ${player.isReady ? "ready" : "not ready"}`,
       });
-    
+    } else if (message.type === "GAME_ROOM") {
+      const clientData = clients.get(ws);
+      if (!clientData) return;
+
+      const room = rooms.get(clientData.roomId);
+      if (!room) return;
+
+      if (room.hostId !== clientData.playerId) {
+        ws.send(
+          JSON.stringify({
+            type: "ERROR",
+            message: "Only the host can start the game",
+          }),
+        );
+        return;
+      }
+
+      broadcast(clientData.roomId, {
+        type: "GAME_ROOM",
+      });
+
     } else if (message.type === "START_GAME") {
       const clientData = clients.get(ws);
 
@@ -459,5 +487,19 @@ setInterval(() => {
     }
   });
 }, 100);
+
+function getAvailableSpriteIndex(room) {
+  const used = new Set(room.players.map(p => p.potatoIndex));
+
+  for (let i = 0; i < MAX_PLAYERS; i++) {
+    if (!used.has(i)) {
+      return i;
+    }
+  }
+
+  // Fallback (should never happen if maxPlayers is enforced)
+  return 0;
+}
+
 
 console.log("🚀 WebSocket server running on ws://localhost:8080");

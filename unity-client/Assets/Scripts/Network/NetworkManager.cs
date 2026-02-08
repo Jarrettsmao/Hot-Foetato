@@ -133,19 +133,26 @@ public class NetworkManager : MonoBehaviour
     }
 
     //send messages to server
-    public void JoinRoom(string roomId, string playerName)
+    public void JoinRoom(string roomId, string playerName, int potatoIndex)
     {
         JoinRoomMessage message = new JoinRoomMessage
         {
             roomId = roomId,
-            playerName = playerName
+            playerName = playerName,
+            potatoIndex = potatoIndex
         };
+        
         SendMessage(message);
     }
 
     public void StartGame()
     {
         SendMessage(new StartGameMessage());
+    }
+
+    public void MoveToGameRoom()
+    {
+        SendMessage(new GameRoomMessage());
     }
 
     public void PassPotato(string targetPlayerId)

@@ -5,6 +5,7 @@ export type Player = {
     connected: boolean;
     isHost: boolean;
     isReady: boolean;
+    potatoIndex: number;
 };
 
 export type GamePhase = "lobby" | "playing" | "ended";

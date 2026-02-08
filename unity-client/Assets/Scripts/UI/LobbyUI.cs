@@ -29,7 +29,7 @@ public class LobbyUI : MonoBehaviour
 
     [Header("Potato Sprites")]
     [SerializeField] private Sprite[] potatoSprites;
-
+    private int potatoIndex;
     private NetworkManager nm;
 
     void Start()
@@ -48,8 +48,6 @@ public class LobbyUI : MonoBehaviour
         leaveButton.gameObject.SetActive(false);
         readyButton.gameObject.SetActive(false);
         unreadyButton.gameObject.SetActive(false);
-
-        // HideAllPlayerProfiles(); 
     }
 
     void OnDestroy()
@@ -88,7 +86,7 @@ public class LobbyUI : MonoBehaviour
                 UpdateUI();
                 break;
 
-            case "GAME_STARTED":
+            case "GAME_ROOM":
                 Debug.Log("🎮 Game started!");
                 SceneManager.LoadScene("Game");
                 break;
@@ -136,8 +134,7 @@ public class LobbyUI : MonoBehaviour
                 //assign potato sprite
                 if (potatoSprites != null && potatoSprites.Length > 0)
                 {
-                    int spriteIndex = i % potatoSprites.Length; //wraps around if >4 players
-                    profile.SetPotatoIcon(potatoSprites[spriteIndex]);
+                    profile.SetPotatoIcon(potatoSprites[player.potatoIndex]);
                 }
 
                 if (player.id == nm.MyPlayerId)
@@ -232,7 +229,8 @@ public class LobbyUI : MonoBehaviour
         if (localPlayer.isReady)
         {
             unreadyButton.gameObject.SetActive(true);
-        } else
+        }
+        else
         {
             readyButton.gameObject.SetActive(true);
         }
@@ -254,14 +252,22 @@ public class LobbyUI : MonoBehaviour
 
         ControlInputUI(false);
 
-        nm.JoinRoom(roomId, playerName);
+        // TEMP: assign by join order (future = player choice)
+        // int potatoIndex = 0;
+        // if (nm.CurrentRoom != null && nm.CurrentRoom.players != null)
+        // {
+        //     int playerCount = nm.CurrentRoom.players.Count;
+        //     potatoIndex = playerCount % potatoSprites.Length;
+        // }
+        
+        nm.JoinRoom(roomId, playerName, -1);
     }
 
     void OnStartClicked()
     {
         Debug.Log("Start Clicked");
 
-        nm.StartGame();
+        nm.MoveToGameRoom();
     }
 
     void OnLeaveClicked()

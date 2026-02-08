@@ -9,6 +9,7 @@ public class Player
     public bool connected;
     public bool isHost;
     public bool isReady;
+    public int potatoIndex;
 }
 
 [Serializable]
@@ -43,6 +44,12 @@ public class JoinRoomMessage
     public string type = "JOIN_ROOM";
     public string roomId;
     public string playerName;
+    public int potatoIndex;
+}
+[Serializable]
+public class GameRoomMessage
+{
+    public string type = "GAME_ROOM";
 }
 [Serializable]
 public class StartGameMessage

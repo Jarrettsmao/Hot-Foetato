@@ -30,7 +30,7 @@ public class PlayerProfileBase : MonoBehaviour
         }
     }
 
-        public string GetPlayerId()
+    public string GetPlayerId()
     {
         return playerId;
     }

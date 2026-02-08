@@ -93,7 +93,7 @@ public class TestUI : MonoBehaviour
             return;
         }
 
-        nm.JoinRoom(roomId, playerName);
+        // nm.JoinRoom(roomId, playerName);
         UpdateStatus($"Joining room {roomId} as {playerName}...");
         joinButton.interactable = false;
     }
