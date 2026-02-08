@@ -1,11 +1,22 @@
 using UnityEngine;
 using TMPro;
+using UnityEngine.UI;
+using System;
 
 public class GameProfile : PlayerProfileBase
 {
     [Header("Game UI")]
     [SerializeField] private TMP_Text scoreText;
 
+    [SerializeField] private Button profileButton;
+
+    public event Action<string> OnProfileClicked;
+
+    void Awake()
+    {
+        profileButton.onClick.AddListener(OnClicked);
+        profileButton.interactable = false;
+    }
     public void SetupProfile(Player player, int score)
     {
         SetupBase(player);
@@ -19,4 +30,20 @@ public class GameProfile : PlayerProfileBase
             scoreText.text = "Score: " + score.ToString();
         }
     }
+
+    public void SetClickable(bool clickable)
+    {
+        if (profileButton != null)
+        {
+            profileButton.interactable = clickable;
+        }
+    }
+
+    void OnClicked()
+    {
+        Debug.Log($"🥔 Profile clicked for player {playerId}");
+        OnProfileClicked?.Invoke(playerId);
+    }
+
+
 }
