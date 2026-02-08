@@ -27,7 +27,13 @@ public class GameUI : MonoBehaviour
     private Transform[] bombTargets;
     private List<GameProfile> activeProfiles = new List<GameProfile>();
 
-    private bool gameEnded = false;
+    public enum GameState
+    {
+        Lobby,
+        InGame,
+        GameOver
+    }
+    private GameState currentGameState = GameState.Lobby;
 
     void Start()
     {
@@ -41,11 +47,10 @@ public class GameUI : MonoBehaviour
             playerPosRight
         };
 
-        startButton.interactable = false;
-
         SetupPlayers();
+
+        RefreshUI();
         UpdateProfileClickability();
-        UpdateButtonStates();
 
         nm.OnMessageReceived += OnMessageReceived;
 
@@ -121,10 +126,9 @@ public class GameUI : MonoBehaviour
         {
             case "GAME_STARTED":
                 Debug.Log("🎮 Game started!");
-                gameEnded = false;
                 // UpdateBombPosition(immediate: true);
-                UpdateProfileClickability();
-                UpdateButtonStates();
+                currentGameState = GameState.InGame;
+                RefreshUI();
                 break;
 
             case "POTATO_PASSED":
@@ -136,13 +140,13 @@ public class GameUI : MonoBehaviour
             case "GAME_ENDED":
                 Debug.Log($"💥 Game ended! Loser: {message.loser?.name}");
                 // ShowExplosion(message.loser);
-                gameEnded = true;
+                currentGameState = GameState.GameOver;
                 // ✅ Disable all profiles on game end
                 foreach (GameProfile profile in activeProfiles)
                 {
                     profile.SetClickable(false);
                 }
-                UpdateButtonStates();
+                RefreshUI();
                 break;
 
             case "ROOM_UPDATE":
@@ -185,59 +189,58 @@ public class GameUI : MonoBehaviour
 
     void OnStartClicked()
     {
-        if (startText.text == "Start")
+        if (currentGameState == GameState.Lobby)
         {
             nm.StartGame();
-        } else
+        }
+        else if (currentGameState == GameState.GameOver)
         {
             nm.PlayAgain();
         }
-        UpdateStartButton("mid-game");
     }
 
     void OnLeaveClicked()
     {
-        
+
     }
 
-    void UpdateButtonStates()
+    void RefreshUI()
     {
-        if (nm.CurrentRoom == null) return;
+        if (nm.CurrentRoom == null)
+            return;
 
         bool isHost = nm.CurrentRoom.hostId == nm.MyPlayerId;
 
-        if (isHost)
+        // START BUTTON
+        if (!isHost)
         {
-            UpdateStartButton("show");
-            
-        } 
-        if (gameEnded)
+            startButton.gameObject.SetActive(false);
+        }
+        else
         {
-            UpdateStartButton("end");
-            Debug.Log(isHost + " ending");
+            startButton.gameObject.SetActive(true);
+
+            switch (currentGameState)
+            {
+                case GameState.Lobby:
+                    startText.text = "Start";
+                    startButton.interactable = true;
+                    break;
+
+                case GameState.InGame:
+                    startButton.interactable = false;
+                    break;
+
+                case GameState.GameOver:
+                    startText.text = "Play Again";
+                    startButton.interactable = true;
+                    break;
+            }
         }
 
+        // LEAVE BUTTON (always available)
         leaveButton.gameObject.SetActive(true);
+        UpdateProfileClickability();
     }
 
-    void UpdateStartButton(string status)
-    {
-        switch (status){
-            case "show":
-                startText.text = "Start";
-                startButton.gameObject.SetActive(true);
-                startButton.interactable = true;
-                Debug.Log("Start is showing");
-                break;
-            case "mid-game":
-                startButton.interactable = false;
-                Debug.Log("Start is mid-game");
-                break;
-            case "end":
-                startText.text = "Play Again";
-                startButton.interactable = true;
-                Debug.Log("Start is end");
-                break;
-        }
-    }
 }
