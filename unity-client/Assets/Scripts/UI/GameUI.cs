@@ -2,6 +2,7 @@ using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
+using UnityEngine.SceneManagement;
 
 public class GameUI : MonoBehaviour
 {
@@ -149,6 +150,18 @@ public class GameUI : MonoBehaviour
                 RefreshUI();
                 break;
 
+            case "RETURN_TO_LOBBY":
+                Debug.Log("🔙 Server requested return to lobby");
+                
+                nm.ApplyRoomUpdate(message.room);
+                ReturnToLobby();
+                break;
+
+            case "LEAVE_SUCCESS":
+                Debug.Log("✅ Successfully left room");
+                ReturnToLobby();
+                break;
+
             case "ROOM_UPDATE":
                 Debug.Log("📋 Room updated during game");
                 break;
@@ -187,6 +200,12 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    void ReturnToLobby()
+    {
+        Debug.Log("🔙 Loading Lobby scene...");
+        SceneManager.LoadScene("Lobby");
+    }
+
     void OnStartClicked()
     {
         if (currentGameState == GameState.Lobby)
@@ -201,7 +220,14 @@ public class GameUI : MonoBehaviour
 
     void OnLeaveClicked()
     {
+        Debug.Log("Leave button clicked");
 
+        if (nm.CurrentRoom == null)
+        {
+            return;
+        }
+
+        nm.LeaveRoom();
     }
 
     void RefreshUI()

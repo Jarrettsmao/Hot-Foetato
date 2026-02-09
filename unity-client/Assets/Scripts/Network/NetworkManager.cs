@@ -115,7 +115,8 @@ public class NetworkManager : MonoBehaviour
                     if (message.newHostId == MyPlayerId)
                     {
                         Debug.Log("👑 You are the new host");
-                    } else
+                    }
+                    else
                     {
                         Debug.Log($"👑 New host is player {message.newHostId}");
                     }
@@ -141,7 +142,7 @@ public class NetworkManager : MonoBehaviour
             playerName = playerName,
             potatoIndex = potatoIndex
         };
-        
+
         SendMessage(message);
     }
 
@@ -177,6 +178,11 @@ public class NetworkManager : MonoBehaviour
         MyPlayerId = null;
 
         Debug.Log("Left the room.");
+    }
+
+    public void ApplyRoomUpdate(GameRoom newRoom)
+    {
+        CurrentRoom = newRoom;
     }
 
     public void ToggleReady()
