@@ -3,15 +3,10 @@ using TMPro;
 using UnityEngine.UI;
 using System.Collections.Generic;
 using UnityEngine.SceneManagement;
+using System.Collections;
 
 public class GameUI : MonoBehaviour
 {
-    [Header("Player Positions")]
-    [SerializeField] private Transform playerPosBottom;
-    [SerializeField] private Transform playerPosTop;
-    [SerializeField] private Transform playerPosLeft;
-    [SerializeField] private Transform playerPosRight;
-
     [Header("Prefabs")]
     [SerializeField] private GameObject playerProfilePrefab;
 
@@ -24,10 +19,13 @@ public class GameUI : MonoBehaviour
     [SerializeField] private Button leaveButton;
 
     private NetworkManager nm;
-    private Transform[] playerPositions;
-    private Transform[] bombTargets;
-    private List<GameProfile> activeProfiles = new List<GameProfile>();
+    [Header("Player/Bomb Positions")]
+    [SerializeField] private Transform[] playerPositions;
+    [SerializeField] private GameObject[] bombIndicators;
 
+    private List<GameProfile> activeProfiles = new List<GameProfile>();
+    private Dictionary<string, int> playerIdToSlot = new Dictionary<string, int>();
+    [SerializeField] private GameObject explosionPrefab;
     public enum GameState
     {
         Lobby,
@@ -40,14 +38,6 @@ public class GameUI : MonoBehaviour
     {
         nm = NetworkManager.Instance;
 
-        playerPositions = new Transform[]
-        {
-            playerPosBottom,
-            playerPosTop,
-            playerPosLeft,
-            playerPosRight
-        };
-
         SetupPlayers();
 
         RefreshUI();
@@ -57,6 +47,8 @@ public class GameUI : MonoBehaviour
 
         startButton.onClick.AddListener(OnStartClicked);
         leaveButton.onClick.AddListener(OnLeaveClicked);
+
+        UpdateBombIndictator(false);
     }
 
     void OnDestroy()
@@ -89,8 +81,9 @@ public class GameUI : MonoBehaviour
         for (int i = 0; i < players.Count; i++)
         {
             Player player = players[i];
-            //caculate display position (make sure you are always on the bottom)
+            //caculate display position (make sure you are always on the bottom) and store it in dictionary
             int displayPosition = (i - yourIndex + players.Count) % players.Count;
+            playerIdToSlot[player.id] = displayPosition;
 
             if (displayPosition >= playerPositions.Length)
             {
@@ -134,13 +127,12 @@ public class GameUI : MonoBehaviour
 
             case "POTATO_PASSED":
                 Debug.Log("🥔 Potato passed!");
-                // UpdateBombPosition(immediate: false);
                 UpdateProfileClickability();
+                UpdateBombIndictator(true);
                 break;
 
             case "GAME_ENDED":
                 Debug.Log($"💥 Game ended! Loser: {message.loser?.name}");
-                // ShowExplosion(message.loser);
                 currentGameState = GameState.GameOver;
                 // ✅ Disable all profiles on game end
                 foreach (GameProfile profile in activeProfiles)
@@ -148,12 +140,21 @@ public class GameUI : MonoBehaviour
                     profile.SetClickable(false);
                 }
                 RefreshUI();
+                UpdateBombIndictator(false);
+                if (message.loser != null)
+                {
+                    Transform loserTransform = GetBombSlotTransform(message.loser.id);
+                    if (loserTransform != null)
+                    {
+                        StartCoroutine(ActivateExplosion(loserTransform, 2f));
+                    }
+                }
                 break;
 
             case "RETURN_TO_LOBBY":
                 Debug.Log("🔙 Server requested return to lobby");
-                
-                nm.ApplyRoomUpdate(message.room);
+
+                // nm.ApplyRoomUpdate(message.room);
                 ReturnToLobby();
                 break;
 
@@ -200,13 +201,62 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    void ReturnToLobby()
+    void UpdateBombIndictator(bool status)
+    {
+        if (nm.CurrentRoom == null) return;
+        foreach (var bomb in bombIndicators)
+        {
+            SetImageVisible(bomb, false);
+        }
+        if (status)
+        {
+            string holderId = nm.CurrentRoom.potatoHolderId;
+            if (string.IsNullOrEmpty(holderId)) return;
+
+            if (!playerIdToSlot.TryGetValue(holderId, out int slot))
+            {
+                Debug.LogWarning("Potato holder not found in slot map");
+                return;
+            }
+
+            SetImageVisible(bombIndicators[slot], true);
+
+            Debug.Log($"Bomb active at slot {slot}");
+        }
+    }
+
+    private void SetImageVisible(GameObject gameObject, bool visible)
+    {
+        Image image = gameObject.GetComponent<Image>();
+        if (image == null) return;
+
+        Color c = image.color;
+        c.a = visible ? 1f : 0f;
+        image.color = c;
+    }
+
+    IEnumerator ActivateExplosion(Transform target, float duration)
+    {
+        RectTransform explosionRect = Instantiate(
+            explosionPrefab,
+            target
+        ).GetComponent<RectTransform>();
+
+        explosionRect.anchoredPosition = Vector2.zero;
+        explosionRect.localScale = Vector3.one;
+
+        yield return new WaitForSeconds(duration);
+
+        Destroy(explosion);
+    }
+
+    private void ReturnToLobby()
     {
         Debug.Log("🔙 Loading Lobby scene...");
         SceneManager.LoadScene("Lobby");
     }
 
-    void OnStartClicked()
+    private void OnStartClicked()
     {
         if (currentGameState == GameState.Lobby)
         {
@@ -218,7 +268,7 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    void OnLeaveClicked()
+    private void OnLeaveClicked()
     {
         Debug.Log("Leave button clicked");
 
@@ -230,7 +280,7 @@ public class GameUI : MonoBehaviour
         nm.LeaveRoom();
     }
 
-    void RefreshUI()
+    private void RefreshUI()
     {
         if (nm.CurrentRoom == null)
             return;
@@ -267,6 +317,18 @@ public class GameUI : MonoBehaviour
         // LEAVE BUTTON (always available)
         leaveButton.gameObject.SetActive(true);
         UpdateProfileClickability();
+    }
+
+    private Transform GetBombSlotTransform(string playerId)
+    {
+        if (!playerIdToSlot.TryGetValue(playerId, out int slot))
+        {
+            return null;
+        }
+
+        if (slot < 0 || slot >= playerPositions.Length) return null;
+
+        return playerPositions[slot];
     }
 
 }

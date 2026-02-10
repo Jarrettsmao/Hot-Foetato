@@ -176,70 +176,60 @@ wss.on("connection", (ws: WebSocket) => {
       const leavingPlayer = room.players.find(
         (p) => p.id === clientData.playerId,
       );
-
       const playerName = leavingPlayer?.name || "Unknown";
       const wasHost = room.hostId === clientData.playerId;
 
-      console.log(`👋 ${playerName} is leaving room ${clientData.roomId}`);
+      console.log(
+        `👋 ${playerName} left room ${clientData.roomId} from Game scene`,
+      );
 
-      // ✅ Remove player from room
+      // ✅ Remove the leaving player
       room.players = room.players.filter((p) => p.id !== clientData.playerId);
 
-      // ✅ Remove websocket from clients map
+      // ✅ If there are still players in the room, reset to lobby
+      if (room.players.length > 0) {
+        // Reset room state
+        room.phase = "lobby";
+        room.potatoHolderId = null;
+        room.endTime = null;
+
+        // ✅ Set all remaining players to NOT ready
+        room.players.forEach((p) => {
+          p.isReady = false;
+        });
+
+        // ✅ Transfer host if needed
+        if (wasHost) {
+          const newHost = room.players[0];
+          room.hostId = newHost.id;
+          newHost.isHost = true;
+          console.log(`👑 Host transferred to ${newHost.name}`);
+        }
+
+        console.log(`🔄 Returning ${room.players.length} players to lobby`);
+
+        // ✅ Tell everyone else to go back to Lobby scene
+        broadcast(clientData.roomId, {
+          type: "RETURN_TO_LOBBY",
+          room: room,
+          message: `${playerName} left. Returning to lobby...`,
+        });
+      } else {
+        // ✅ Room is empty, delete it
+        rooms.delete(clientData.roomId);
+        console.log(`🗑️ Room ${clientData.roomId} deleted (empty)`);
+      }
+
+      // ✅ Remove from clients map
       clients.delete(ws);
 
-      // ✅ Tell the leaving player they left successfully
+      // ✅ Send confirmation to the person who left
       ws.send(
         JSON.stringify({
           type: "LEAVE_SUCCESS",
           message: "You left the room",
         }),
       );
-
-      // 🧹 ROOM EMPTY → DELETE ROOM
-      if (room.players.length === 0) {
-        rooms.delete(clientData.roomId);
-        console.log(`🗑️ Room ${clientData.roomId} deleted (empty)`);
-        return;
-      }
-
-      // 👑 HOST TRANSFER (if needed)
-      if (wasHost) {
-        const newHost = room.players[0];
-        room.hostId = newHost.id;
-        newHost.isHost = true;
-
-        console.log(`👑 Host transferred to ${newHost.name}`);
-      }
-
-      // 🎮 IF PLAYER LEFT DURING GAME → RETURN OTHERS TO LOBBY
-      if (room.phase === "playing" || room.phase === "ended") {
-        room.phase = "lobby";
-        room.potatoHolderId = null;
-        room.endTime = null;
-
-        // reset ready state
-        room.players.forEach((p) => {
-          p.isReady = false;
-        });
-
-        console.log(
-          `🔄 Returning ${room.players.length} players to lobby (same room)`,
-        );
-
-        broadcast(clientData.roomId, {
-          type: "RETURN_TO_LOBBY",
-          room: room,
-          message: `${playerName} left. Returning to lobby.`,
-        });
-      } else {
-        // 🏠 LEFT DURING LOBBY → NORMAL ROOM UPDATE
-        broadcast(clientData.roomId, {
-          type: "ROOM_UPDATE",
-          room: room,
-          message: `${playerName} left the room`,
-        });
-      }
     } else if (message.type === "TOGGLE_READY") {
       const clientData = clients.get(ws);
       if (!clientData) return;

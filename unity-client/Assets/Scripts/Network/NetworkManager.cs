@@ -19,6 +19,8 @@ public class NetworkManager : MonoBehaviour
     public string MyPlayerId { get; private set; }
     public GameRoom CurrentRoom { get; private set; }
 
+    public string MyPlayerName { get; private set; }
+
     void Awake()
     {
         if (Instance == null)
@@ -93,6 +95,22 @@ public class NetworkManager : MonoBehaviour
                     Debug.Log("🚪 Left room successfully");
                     CurrentRoom = null;
                     MyPlayerId = null;
+                    MyPlayerName = null;
+                    break;
+                case "RETURN_TO_LOBBY":
+                    if (message.room != null)
+                    {
+                        CurrentRoom = message.room;
+                        Debug.Log($"🔙 Returned to lobby, still in room: {CurrentRoom.roomId}");
+                        Debug.Log($"   Players: {CurrentRoom.players.Count}");
+                        Debug.Log($"   Host: {CurrentRoom.hostId}, Am I host? {CurrentRoom.hostId == MyPlayerId}");
+
+                        // Log all players for debugging
+                        foreach (var p in CurrentRoom.players)
+                        {
+                            Debug.Log($"   Player: {p.name}, isHost: {p.isHost}, isReady: {p.isReady}");
+                        }
+                    }
                     break;
                 case "ROOM_UPDATE":
                     CurrentRoom = message.room;
@@ -136,6 +154,8 @@ public class NetworkManager : MonoBehaviour
     //send messages to server
     public void JoinRoom(string roomId, string playerName, int potatoIndex)
     {
+        MyPlayerName = playerName;
+
         JoinRoomMessage message = new JoinRoomMessage
         {
             roomId = roomId,
@@ -173,10 +193,6 @@ public class NetworkManager : MonoBehaviour
     public void LeaveRoom()
     {
         SendMessage(new LeaveRoomMessage());
-
-        CurrentRoom = null;
-        MyPlayerId = null;
-
         Debug.Log("Left the room.");
     }
 

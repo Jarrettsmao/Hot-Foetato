@@ -47,6 +47,9 @@ public class LobbyUI : MonoBehaviour
         leaveButton.gameObject.SetActive(false);
         readyButton.gameObject.SetActive(false);
         unreadyButton.gameObject.SetActive(false);
+
+        SyncFromNetworkState();
+        AutoFillInputs();
     }
 
     void OnDestroy()
@@ -336,6 +339,40 @@ public class LobbyUI : MonoBehaviour
         }
 
         return allReady;
+    }
+
+    private void SyncFromNetworkState()
+    {
+        if (nm.CurrentRoom == null)
+        {
+            Debug.Log("ℹ️ Lobby loaded with no active room");
+            ControlInputUI(true);
+            joinCreateButton.gameObject.SetActive(true);
+            leaveButton.gameObject.SetActive(false);
+            UpdateUI();
+            return;
+        }
+
+        Debug.Log($"🔄 Lobby synced from NetworkManager (room {nm.CurrentRoom.roomId})");
+
+        ControlInputUI(false);
+        joinCreateButton.gameObject.SetActive(false);
+        leaveButton.gameObject.SetActive(true);
+
+        UpdateUI();
+    }
+
+    private void AutoFillInputs()
+    {
+        if (!string.IsNullOrEmpty(nm.MyPlayerName))
+        {
+            playerNameInputField.text = nm.MyPlayerName;
+        }
+
+        if (nm.CurrentRoom != null && !string.IsNullOrEmpty(nm.CurrentRoom.roomId))
+        {
+            roomIdInputField.text = nm.CurrentRoom.roomId;
+        }
     }
 }
 
