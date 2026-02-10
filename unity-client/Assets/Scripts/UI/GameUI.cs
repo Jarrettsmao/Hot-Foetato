@@ -237,11 +237,9 @@ public class GameUI : MonoBehaviour
 
     IEnumerator ActivateExplosion(Transform target, float duration)
     {
-        RectTransform explosionRect = Instantiate(
-            explosionPrefab,
-            target
-        ).GetComponent<RectTransform>();
+        GameObject explosion = Instantiate(explosionPrefab, target);
 
+        RectTransform explosionRect = explosion.GetComponent<RectTransform>();
         explosionRect.anchoredPosition = Vector2.zero;
         explosionRect.localScale = Vector3.one;
 
@@ -249,6 +247,7 @@ public class GameUI : MonoBehaviour
 
         Destroy(explosion);
     }
+
 
     private void ReturnToLobby()
     {
