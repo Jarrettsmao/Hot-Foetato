@@ -3,6 +3,7 @@ using UnityEngine.UI;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine.SceneManagement;
+using System.Collections;
 // using System.Diagnostics;
 
 public class LobbyUI : MonoBehaviour
@@ -25,6 +26,7 @@ public class LobbyUI : MonoBehaviour
     [SerializeField] private Transform playerProfileContainer;  // The Grid Layout parent
     [SerializeField] private TMP_Text playerListTitleText;
     [SerializeField] private GameObject playerProfilePrefab;
+    [SerializeField] private TMP_Text errorText;
     private List<PlayerProfile> playerProfiles = new List<PlayerProfile>();
 
     [Header("Potato Sprites")]
@@ -94,6 +96,11 @@ public class LobbyUI : MonoBehaviour
                 break;
 
             case "ERROR":
+                if (message.code == "DUPLICATE_NAME")
+                {
+                    ControlInputUI(true);
+                }
+                StartCoroutine(ShowError(message.message, 5f));
                 Debug.LogError($"❌ Server error: {message.message}");
                 break;
         }
@@ -373,6 +380,16 @@ public class LobbyUI : MonoBehaviour
         {
             roomIdInputField.text = nm.CurrentRoom.roomId;
         }
+    }
+
+    IEnumerator ShowError(string message, float duration)
+    {
+        Debug.Log("error");
+        errorText.text = "Error: " + message;
+
+        yield return new WaitForSeconds(duration);
+
+        errorText.text = "";
     }
 }
 

@@ -120,9 +120,9 @@ public class GameUI : MonoBehaviour
         {
             case "GAME_STARTED":
                 Debug.Log("🎮 Game started!");
-                // UpdateBombPosition(immediate: true);
                 currentGameState = GameState.InGame;
                 RefreshUI();
+                UpdateBombIndictator(true);
                 break;
 
             case "POTATO_PASSED":
@@ -183,7 +183,7 @@ public class GameUI : MonoBehaviour
         nm.PassPotato(targetPlayerId);
     }
 
-    void UpdateProfileClickability()
+    private void UpdateProfileClickability()
     {
         if (nm.CurrentRoom == null) return;
 
@@ -191,11 +191,15 @@ public class GameUI : MonoBehaviour
         bool iHaveThePotato = potatoHolderId == nm.MyPlayerId;
 
         //check if 1. i have the potato 2. if the profile is not me then set profile clickable
+        //3. not game over
         foreach (GameProfile profile in activeProfiles)
         {
             string profilePlayerId = profile.GetPlayerId();
 
-            bool isClickable = iHaveThePotato && profilePlayerId != nm.MyPlayerId;
+            bool isClickable = 
+                iHaveThePotato && 
+                profilePlayerId != nm.MyPlayerId && 
+                currentGameState != GameState.GameOver;
 
             profile.SetClickable(isClickable);
         }
@@ -225,6 +229,7 @@ public class GameUI : MonoBehaviour
         }
     }
 
+    //sets alpha to 255 or 0 depending on bool
     private void SetImageVisible(GameObject gameObject, bool visible)
     {
         Image image = gameObject.GetComponent<Image>();

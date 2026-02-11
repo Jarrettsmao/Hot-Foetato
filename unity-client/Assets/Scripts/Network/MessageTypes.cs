@@ -29,6 +29,7 @@ public class ServerMessage
 {
     public string type;
     public string message;
+    public string code;
     public GameRoom room;
     public Player loser;
     public string playerId;

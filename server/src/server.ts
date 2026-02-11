@@ -129,6 +129,7 @@ wss.on("connection", (ws: WebSocket) => {
         ws.send(
           JSON.stringify({
             type: "ERROR",
+            code: "DUPLICATE_NAME",
             message:
               "Player name already taken in this room. Please change it and try again.",
           }),
