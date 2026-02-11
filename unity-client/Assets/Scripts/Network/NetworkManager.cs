@@ -118,7 +118,7 @@ public class NetworkManager : MonoBehaviour
                     break;
                 case "GAME_STARTED":
                     CurrentRoom = message.room;
-                    Debug.Log("🎮 Game started");
+                    Debug.Log("NM 🎮 Game started");
                     break;
                 case "POTATO_PASSED":
                     CurrentRoom = message.room;

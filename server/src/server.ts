@@ -315,6 +315,7 @@ wss.on("connection", (ws: WebSocket) => {
         return;
       }
 
+      //if game is already in progress
       if (room.phase !== "lobby") {
         ws.send(
           JSON.stringify({
@@ -325,7 +326,8 @@ wss.on("connection", (ws: WebSocket) => {
         return;
       }
 
-      startGame(clientData.roomId, room);
+      //make sure all players are tracked and tries to connect again
+      setTimeout(() => startGame(clientData.roomId, room), 5000);
     } else if (message.type === "PASS_POTATO") {
       const clientData = clients.get(ws);
       if (!clientData) return;

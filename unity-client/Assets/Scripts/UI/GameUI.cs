@@ -48,7 +48,7 @@ public class GameUI : MonoBehaviour
         startButton.onClick.AddListener(OnStartClicked);
         leaveButton.onClick.AddListener(OnLeaveClicked);
 
-        UpdateBombIndictator(false);
+        // UpdateBombIndictator(false);
     }
 
     void OnDestroy()
@@ -119,8 +119,11 @@ public class GameUI : MonoBehaviour
         switch (message.type)
         {
             case "GAME_STARTED":
-                Debug.Log("🎮 Game started!");
+                Debug.Log("GameUI 🎮 Game started!");
                 currentGameState = GameState.InGame;
+
+                RebuildPlayers();
+
                 RefreshUI();
                 UpdateBombIndictator(true);
                 break;
@@ -196,9 +199,9 @@ public class GameUI : MonoBehaviour
         {
             string profilePlayerId = profile.GetPlayerId();
 
-            bool isClickable = 
-                iHaveThePotato && 
-                profilePlayerId != nm.MyPlayerId && 
+            bool isClickable =
+                iHaveThePotato &&
+                profilePlayerId != nm.MyPlayerId &&
                 currentGameState != GameState.GameOver;
 
             profile.SetClickable(isClickable);
@@ -207,7 +210,9 @@ public class GameUI : MonoBehaviour
 
     void UpdateBombIndictator(bool status)
     {
+        Debug.Log("Holder according to UI: " + nm.CurrentRoom.potatoHolderId);
         if (nm.CurrentRoom == null) return;
+        Debug.Log("room is not empty according to bomb" + status);
         foreach (var bomb in bombIndicators)
         {
             SetImageVisible(bomb, false);
@@ -264,6 +269,7 @@ public class GameUI : MonoBehaviour
     {
         if (currentGameState == GameState.Lobby)
         {
+            startButton.interactable = false;
             nm.StartGame();
         }
         else if (currentGameState == GameState.GameOver)
@@ -333,6 +339,20 @@ public class GameUI : MonoBehaviour
         if (slot < 0 || slot >= playerPositions.Length) return null;
 
         return playerPositions[slot];
+    }
+
+    private void RebuildPlayers()
+    {
+        foreach (GameProfile profile in activeProfiles)
+        {
+            if (profile != null)
+                Destroy(profile.gameObject);
+        }
+
+        activeProfiles.Clear();
+        playerIdToSlot.Clear();
+
+        SetupPlayers();
     }
 
 }

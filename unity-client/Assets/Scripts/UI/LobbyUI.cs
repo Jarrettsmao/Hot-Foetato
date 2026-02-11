@@ -91,7 +91,7 @@ public class LobbyUI : MonoBehaviour
                 break;
 
             case "GAME_ROOM":
-                Debug.Log("🎮 Game started!");
+                Debug.Log("Going to game room!");
                 SceneManager.LoadScene("Game");
                 break;
 
