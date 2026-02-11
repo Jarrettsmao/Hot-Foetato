@@ -100,7 +100,7 @@ public class LobbyUI : MonoBehaviour
                 {
                     ControlInputUI(true);
                 }
-                StartCoroutine(ShowError(message.message, 5f));
+                StartCoroutine(ShowError(message.message));
                 Debug.LogError($"❌ Server error: {message.message}");
                 break;
         }
@@ -247,12 +247,16 @@ public class LobbyUI : MonoBehaviour
     {
         Debug.Log("Join Status Clicked");
 
+        //if error message is still showing
+        errorText.text = "";
+
         string roomId = roomIdInputField.text;
         string playerName = playerNameInputField.text;
 
         if (string.IsNullOrEmpty(playerName) || string.IsNullOrEmpty(roomId))
         {
-            Debug.LogWarning("Player name and room ID are required to join or create a room.");
+            string errorMessage = "Player name and room ID are required to join or create a room.";
+            StartCoroutine(ShowError(errorMessage));
             return;
         }
 
@@ -382,9 +386,9 @@ public class LobbyUI : MonoBehaviour
         }
     }
 
-    IEnumerator ShowError(string message, float duration)
+    IEnumerator ShowError(string message)
     {
-        Debug.Log("error");
+        float duration = 5f;
         errorText.text = "Error: " + message;
 
         yield return new WaitForSeconds(duration);

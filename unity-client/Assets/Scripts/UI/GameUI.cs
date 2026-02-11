@@ -26,6 +26,7 @@ public class GameUI : MonoBehaviour
     private List<GameProfile> activeProfiles = new List<GameProfile>();
     private Dictionary<string, int> playerIdToSlot = new Dictionary<string, int>();
     [SerializeField] private GameObject explosionPrefab;
+    private GameObject explosion;
     public enum GameState
     {
         Lobby,
@@ -121,11 +122,13 @@ public class GameUI : MonoBehaviour
             case "GAME_STARTED":
                 Debug.Log("GameUI 🎮 Game started!");
                 currentGameState = GameState.InGame;
-
                 RebuildPlayers();
-
                 RefreshUI();
                 UpdateBombIndictator(true);
+
+                //delete old explosion if it is still active
+                Destroy(explosion);
+
                 break;
 
             case "POTATO_PASSED":
@@ -247,7 +250,7 @@ public class GameUI : MonoBehaviour
 
     IEnumerator ActivateExplosion(Transform target, float duration)
     {
-        GameObject explosion = Instantiate(explosionPrefab, target);
+        explosion = Instantiate(explosionPrefab, target);
 
         RectTransform explosionRect = explosion.GetComponent<RectTransform>();
         explosionRect.anchoredPosition = Vector2.zero;
