@@ -18,15 +18,21 @@ public class GameUI : MonoBehaviour
     [SerializeField] private TMP_Text startText;
     [SerializeField] private Button leaveButton;
 
-    private NetworkManager nm;
     [Header("Player/Bomb Positions")]
     [SerializeField] private Transform[] playerPositions;
     [SerializeField] private GameObject[] bombIndicators;
 
-    private List<GameProfile> activeProfiles = new List<GameProfile>();
-    private Dictionary<string, int> playerIdToSlot = new Dictionary<string, int>();
+    [Header("Explosion")]
     [SerializeField] private GameObject explosionPrefab;
     private GameObject explosion;
+
+    [Header("Loser Text")]
+    [SerializeField] private GameObject loserTextObject;
+
+    private NetworkManager nm;
+    private List<GameProfile> activeProfiles = new List<GameProfile>();
+    private Dictionary<string, int> playerIdToSlot = new Dictionary<string, int>();
+
     public enum GameState
     {
         Lobby,
@@ -49,7 +55,7 @@ public class GameUI : MonoBehaviour
         startButton.onClick.AddListener(OnStartClicked);
         leaveButton.onClick.AddListener(OnLeaveClicked);
 
-        // UpdateBombIndictator(false);
+        loserTextObject.SetActive(false);
     }
 
     void OnDestroy()
@@ -129,6 +135,9 @@ public class GameUI : MonoBehaviour
                 //delete old explosion if it is still active
                 Destroy(explosion);
 
+                //disable loser text
+                loserTextObject.SetActive(false);
+
                 break;
 
             case "POTATO_PASSED":
@@ -154,6 +163,9 @@ public class GameUI : MonoBehaviour
                     {
                         StartCoroutine(ActivateExplosion(loserTransform, 2f));
                     }
+
+                    //show loser message
+                    SetLoserText(message.loser.name);
                 }
                 break;
 
@@ -358,4 +370,10 @@ public class GameUI : MonoBehaviour
         SetupPlayers();
     }
 
+    private void SetLoserText(string loserName)
+    {
+        string defaultText = " Exploded Into French Fries.";
+        loserTextObject.SetActive(true);
+        loserTextObject.GetComponent<TextMeshProUGUI>().text = loserName + defaultText;
+    }
 }
