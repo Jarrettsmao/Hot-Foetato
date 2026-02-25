@@ -520,7 +520,7 @@ setInterval(() => {
   });
 }, 100);
 
-function getAvailableSpriteIndex(room) {
+function getAvailableSpriteIndex(room: GameRoom) {
   const used = new Set(room.players.map((p) => p.potatoIndex));
 
   for (let i = 0; i < MAX_PLAYERS; i++) {
