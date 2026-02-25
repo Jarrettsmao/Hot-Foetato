@@ -9,6 +9,7 @@ public class GameProfile : PlayerProfileBase
     [SerializeField] private TMP_Text scoreText;
 
     [SerializeField] private Button profileButton;
+    private int currentScore = 0;
 
     public event Action<string> OnProfileClicked;
 
@@ -25,10 +26,22 @@ public class GameProfile : PlayerProfileBase
 
     public void SetScore(int score)
     {
+        currentScore = score;
+
         if (scoreText != null)
         {
             scoreText.text = "Score: " + score.ToString();
         }
+    }
+
+    public int GetScore()
+    {
+        return currentScore;
+    }
+
+    public void AddScore(int points)
+    {
+        SetScore(currentScore + points);
     }
 
     public void SetClickable(bool clickable)

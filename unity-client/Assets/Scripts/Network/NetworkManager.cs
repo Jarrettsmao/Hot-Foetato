@@ -196,11 +196,6 @@ public class NetworkManager : MonoBehaviour
         Debug.Log("Left the room.");
     }
 
-    public void ApplyRoomUpdate(GameRoom newRoom)
-    {
-        CurrentRoom = newRoom;
-    }
-
     public void ToggleReady()
     {
         SendMessage(new ToggleReadyMessage());

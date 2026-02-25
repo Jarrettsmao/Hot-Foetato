@@ -30,6 +30,7 @@ public class GameUI : MonoBehaviour
     [SerializeField] private GameObject loserTextObject;
 
     private NetworkManager nm;
+    private ScoreManager sm;
     private List<GameProfile> activeProfiles = new List<GameProfile>();
     private Dictionary<string, int> playerIdToSlot = new Dictionary<string, int>();
 
@@ -44,6 +45,7 @@ public class GameUI : MonoBehaviour
     void Start()
     {
         nm = NetworkManager.Instance;
+        sm = ScoreManager.Instance;
 
         SetupPlayers();
 
@@ -82,7 +84,6 @@ public class GameUI : MonoBehaviour
         }
 
         List<Player> players = nm.CurrentRoom.players;
-
         int yourIndex = players.FindIndex(p => p.id == nm.MyPlayerId);
 
         for (int i = 0; i < players.Count; i++)
@@ -106,7 +107,9 @@ public class GameUI : MonoBehaviour
             //set defaults for profiles & their corresponding sprites
             if (profile != null)
             {
-                profile.SetupProfile(player, 0); //starting score
+                //get score from manager
+                int score = sm != null ? sm.GetScore(player.id) : 0;
+                profile.SetupProfile(player, score); //starting score
 
                 int spriteIndex = player.potatoIndex;
                 Sprite sprite = potatoSpritesData.GetSprite(spriteIndex);
@@ -149,6 +152,7 @@ public class GameUI : MonoBehaviour
             case "GAME_ENDED":
                 Debug.Log($"💥 Game ended! Loser: {message.loser?.name}");
                 currentGameState = GameState.GameOver;
+                
                 // ✅ Disable all profiles on game end
                 foreach (GameProfile profile in activeProfiles)
                 {
@@ -158,6 +162,20 @@ public class GameUI : MonoBehaviour
                 UpdateBombIndictator(false);
                 if (message.loser != null)
                 {
+                    //add points to loser
+                    if (sm != null)
+                    {
+                        sm.AddScore(message.loser.id, 1);
+                        Debug.Log($"{message.loser.name} now has {sm.GetScore(message.loser.id)} points");
+                    
+                        //update loser's score display
+                        GameProfile loserProfile = activeProfiles.Find(p => p.GetPlayerId() == message.loser.id);
+                        if (loserProfile != null)
+                        {
+                            loserProfile.SetScore(sm.GetScore(message.loser.id));
+                        }
+                    }
+
                     Transform loserTransform = GetBombSlotTransform(message.loser.id);
                     if (loserTransform != null)
                     {
@@ -172,7 +190,12 @@ public class GameUI : MonoBehaviour
             case "RETURN_TO_LOBBY":
                 Debug.Log("🔙 Server requested return to lobby");
 
-                // nm.ApplyRoomUpdate(message.room);
+                //reset scores when returning to lobby
+                if (sm != null)
+                {
+                    sm.ResetAllScores();
+                }
+
                 ReturnToLobby();
                 break;
 
