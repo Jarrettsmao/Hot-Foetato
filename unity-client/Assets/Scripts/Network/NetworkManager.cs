@@ -9,7 +9,7 @@ public class NetworkManager : MonoBehaviour
     public static NetworkManager Instance { get; private set; }
 
     private WebSocket websocket;
-    public string serverUrl = "ws://localhost:8080";
+    public string serverUrl = "wss://hot-foetato.onrender.com/";
 
     //events for other scripts to listen to
     public event Action<ServerMessage> OnMessageReceived;

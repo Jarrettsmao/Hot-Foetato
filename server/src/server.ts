@@ -533,4 +533,4 @@ function getAvailableSpriteIndex(room: GameRoom) {
   return 0;
 }
 
-console.log("🚀 WebSocket server running on ws://localhost:8080");
+console.log("🚀 WebSocket server running on wss://hot-foetato.onrender.com/");

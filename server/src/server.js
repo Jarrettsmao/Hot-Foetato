@@ -414,4 +414,4 @@ function getAvailableSpriteIndex(room) {
     // Fallback (should never happen if maxPlayers is enforced)
     return 0;
 }
-console.log("🚀 WebSocket server running on ws://localhost:8080");
+console.log("🚀 WebSocket server running on https://hot-foetato.onrender.com/");

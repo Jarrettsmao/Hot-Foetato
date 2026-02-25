@@ -908,7 +908,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 45f2f50952c3bca438e88391acc1fe84, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NetworkManager
-  serverUrl: ws://localhost:8080
+  serverUrl: wss://hot-foetato.onrender.com/
 --- !u!4 &1654307346
 Transform:
   m_ObjectHideFlags: 0
