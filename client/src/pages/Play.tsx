@@ -10,6 +10,7 @@ function Play() {
           border: "none",
         }}
         allow="autoplay; fullscreen"
+        allowFullScreen
       />
     </div>
   );

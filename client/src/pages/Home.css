@@ -1,17 +1,16 @@
 @font-face {
     font-family: "PixelText";
-    src: url("/Fonts/PixelColeco-4vJW.woff2") format("woff2");
+    src: url("/fonts/PixelColeco-4vJW.woff2") format("woff2");
     font-weight: bold;
 }
 
 @font-face {
     font-family: "PixelTitle";
-    src: url("/Fonts/PixelDigivolveItalic-dV8R.woff2") format("woff2");
+    src: url("/fonts/PixelDigivolveItalic-dV8R.woff2") format("woff2");
 }
 
 html, body {
-    font-family: "PixelText";
-    src: url("/Fonts/PixelDigivolveItalic-dV8R.woff2") format("woff2");
+    font-family: "PixelText", sans-serif;
 }
 
 * {
