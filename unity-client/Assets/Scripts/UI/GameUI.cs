@@ -219,12 +219,18 @@ public class GameUI : MonoBehaviour
 
     void OnProfileClicked(string targetPlayerId)
     {
-        Debug.Log($"🥔 Profile clicked! Attempting to pass potato to {targetPlayerId}");
+        Debug.Log($"Profile clicked! Attempting to pass potato to {targetPlayerId}");
+
+        if (currentGameState != GameState.InGame)
+        {
+            Debug.Log("Ignoring pass: game is not live yet.");
+            return;
+        }
 
         // Validate that I actually have the potato
         if (nm.CurrentRoom == null || nm.CurrentRoom.potatoHolderId != nm.MyPlayerId)
         {
-            Debug.LogWarning("⚠️ You don't have the potato!");
+            Debug.LogWarning("You don't have the potato!");
             return;
         }
 
@@ -247,8 +253,7 @@ public class GameUI : MonoBehaviour
             bool isClickable =
                 iHaveThePotato &&
                 profilePlayerId != nm.MyPlayerId &&
-                currentGameState != GameState.GameOver &&
-                currentGameState != GameState.CountDown;
+                currentGameState == GameState.InGame;
 
             profile.SetClickable(isClickable);
         }
@@ -418,3 +423,4 @@ public class GameUI : MonoBehaviour
         loserTextObject.GetComponent<TextMeshProUGUI>().text = loserName + defaultText;
     }
 }
+
