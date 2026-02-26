@@ -211,8 +211,28 @@ public class GameUI : MonoBehaviour
                 ReturnToLobby();
                 break;
 
+            case "HOST_TRANSFERRED":
+                Debug.Log("👑 Host transferred during game");
+                if (message.room != null && message.room.phase == "lobby")
+                {
+                    if (sm != null)
+                    {
+                        sm.ResetAllScores();
+                    }
+                    ReturnToLobby();
+                }
+                break;
+
             case "ROOM_UPDATE":
                 Debug.Log("📋 Room updated during game");
+                if (message.room != null && message.room.phase == "lobby")
+                {
+                    if (sm != null)
+                    {
+                        sm.ResetAllScores();
+                    }
+                    ReturnToLobby();
+                }
                 break;
         }
     }

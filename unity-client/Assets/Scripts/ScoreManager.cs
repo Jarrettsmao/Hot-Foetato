@@ -40,7 +40,7 @@ public class ScoreManager : MonoBehaviour
             playerScores[playerId] = 0;
         }
 
-        playerScores[playerId] += points;
+        playerScores[playerId] -= points;
         Debug.Log($"Player {playerId} score: {playerScores[playerId]} (+{points})");
     }
 

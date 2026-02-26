@@ -468,8 +468,16 @@ wss.on("connection", (ws: WebSocket) => {
       : "Unknown Player";
     const wasHost = room.hostId === clientData.playerId;
 
+    // remove closed socket from active clients immediately
+    clients.delete(ws);
+
     // Start a grace period timer
     const timer = setTimeout(() => {
+      if (!rooms.has(clientData.roomId)) {
+        disconnectTimers.delete(clientData.playerId);
+        return;
+      }
+
       const stillInRoom = room.players.find(
         (p) => p.id === clientData.playerId,
       );
@@ -477,29 +485,55 @@ wss.on("connection", (ws: WebSocket) => {
         room.players = room.players.filter((p) => p.id !== clientData.playerId);
       }
 
-      if (wasHost && room.players.length > 0) {
-        const newHost = room.players[0];
-        room.hostId = newHost.id;
-        newHost.isHost = true;
-
-        console.log(`New host in room ${clientData.roomId} is ${newHost.name}`);
-
-        broadcast(clientData.roomId, {
-          type: "HOST_TRANSFERRED",
-          newHostId: newHost.id,
-          room: room,
-          message: `${playerName} has left. ${newHost.name} is now the host`,
-        });
-      }
-
       if (room.players.length === 0) {
         rooms.delete(clientData.roomId);
         console.log(`Room ${clientData.roomId} deleted (empty)`);
-      } else if (!wasHost) {
+      } else {
+        // match LEAVE_ROOM behavior for hard disconnects
+        room.phase = "lobby";
+        room.potatoHolderId = null;
+        room.endTime = null;
+
+        room.players.forEach((p) => {
+          p.isReady = false;
+          p.isHost = false;
+        });
+
+        if (wasHost) {
+          const newHost = room.players[0];
+          room.hostId = newHost.id;
+          newHost.isHost = true;
+          console.log(`Host transferred to ${newHost.name} after disconnect`);
+
+          broadcast(clientData.roomId, {
+            type: "HOST_TRANSFERRED",
+            newHostId: newHost.id,
+            room: room,
+            message: `${playerName} disconnected. ${newHost.name} is now the host.`,
+          });
+        } else {
+          const hostStillInRoom = room.players.find((p) => p.id === room.hostId);
+          if (!hostStillInRoom) {
+            const newHost = room.players[0];
+            room.hostId = newHost.id;
+            newHost.isHost = true;
+            console.log(`Host repaired to ${newHost.name} after disconnect`);
+
+            broadcast(clientData.roomId, {
+              type: "HOST_TRANSFERRED",
+              newHostId: newHost.id,
+              room: room,
+              message: `${playerName} disconnected. ${newHost.name} is now the host.`,
+            });
+          } else {
+            hostStillInRoom.isHost = true;
+          }
+        }
+
         broadcast(clientData.roomId, {
-          type: "ROOM_UPDATE",
+          type: "RETURN_TO_LOBBY",
           room: room,
-          message: `${playerName} has disconnected`,
+          message: `${playerName} disconnected. Returning to lobby...`,
         });
       }
 
