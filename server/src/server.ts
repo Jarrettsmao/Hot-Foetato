@@ -11,6 +11,7 @@ const MIN_PLAYERS = 2;
 const MAX_PLAYERS = 4;
 const MIN_TIMER = 10000; //10 sec
 const MAX_TIMER = 30000; //30 sec
+const COUNTDOWN_MS = 4000;
 
 function broadcast(roomId: string, message: unknown) {
   clients.forEach((clientData, clientWs) => {
@@ -24,17 +25,12 @@ function broadcast(roomId: string, message: unknown) {
 }
 
 function startGame(roomId: string, room: GameRoom) {
-  room.phase = "playing";
+  room.phase = "countdown";
 
   // pick random potato holder
   const randomIndex = Math.floor(Math.random() * room.players.length);
   room.potatoHolderId = room.players[randomIndex].id;
-
-  // set random timer
-  const randomDelay =
-    Math.floor(Math.random() * (MAX_TIMER - MIN_TIMER)) + MIN_TIMER;
-
-  room.endTime = Date.now() + randomDelay;
+  room.endTime = null;
 
   broadcast(roomId, {
     type: "GAME_STARTED",
@@ -44,7 +40,28 @@ function startGame(roomId: string, room: GameRoom) {
     } has the potato!`,
   });
 
-  console.log(`Game started in room ${roomId}, timer: ${randomDelay / 1000}s`);
+  setTimeout(() => {
+    // room may have been reset or emptied during countdown
+    if (room.phase !== "countdown" || room.players.length < 2) {
+      return;
+    }
+
+    // set random timer only after countdown finishes
+    const randomDelay =
+      Math.floor(Math.random() * (MAX_TIMER - MIN_TIMER)) + MIN_TIMER;
+    room.phase = "playing";
+    room.endTime = Date.now() + randomDelay;
+
+    broadcast(roomId, {
+      type: "GAME_LIVE",
+      room: room,
+      message: "Countdown finished. Game is now live!",
+    });
+
+    console.log(`Game live in room ${roomId}, timer: ${randomDelay / 1000}s`);
+  }, COUNTDOWN_MS);
+
+  console.log(`Countdown started in room ${roomId}`);
 }
 
 wss.on("connection", (ws: WebSocket) => {

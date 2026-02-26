@@ -9,7 +9,7 @@ public class NetworkManager : MonoBehaviour
     public static NetworkManager Instance { get; private set; }
 
     private WebSocket websocket;
-    public string serverUrl = "wss://hot-foetato.onrender.com/";
+    [SerializeField] public string serverUrl = "ws:localhost:8080/";
 
     //events for other scripts to listen to
     public event Action<ServerMessage> OnMessageReceived;
@@ -119,6 +119,10 @@ public class NetworkManager : MonoBehaviour
                 case "GAME_STARTED":
                     CurrentRoom = message.room;
                     Debug.Log("NM 🎮 Game started");
+                    break;
+                case "GAME_LIVE":
+                    CurrentRoom = message.room;
+                    Debug.Log("NM 🚀 Game is live");
                     break;
                 case "POTATO_PASSED":
                     CurrentRoom = message.room;

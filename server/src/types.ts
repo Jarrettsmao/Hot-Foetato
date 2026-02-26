@@ -8,7 +8,7 @@ export type Player = {
     potatoIndex: number;
 };
 
-export type GamePhase = "lobby" | "playing" | "ended";
+export type GamePhase = "lobby" | "countdown" | "playing" | "ended";
 
 export type GameRoom = {
     roomId: string;

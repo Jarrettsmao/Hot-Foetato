@@ -37,6 +37,7 @@ public class GameUI : MonoBehaviour
     public enum GameState
     {
         Lobby,
+        CountDown,
         InGame,
         GameOver
     }
@@ -47,8 +48,9 @@ public class GameUI : MonoBehaviour
         nm = NetworkManager.Instance;
         sm = ScoreManager.Instance;
 
-        SetupPlayers();
+        CountdownManager.Instance.OnCountdownFinished += StartActualGame;
 
+        SetupPlayers();
         RefreshUI();
         UpdateProfileClickability();
 
@@ -62,14 +64,19 @@ public class GameUI : MonoBehaviour
 
     void OnDestroy()
     {
-        if (nm != null)
+        if (nm)
         {
             nm.OnMessageReceived -= OnMessageReceived;
         }
+        if (CountdownManager.Instance)
+        {
+            CountdownManager.Instance.OnCountdownFinished -= StartActualGame;
+        }
+
 
         foreach (GameProfile profile in activeProfiles)
         {
-            if (profile != null)
+            if (profile)
             {
                 profile.OnProfileClicked -= OnProfileClicked;
             }
@@ -130,10 +137,9 @@ public class GameUI : MonoBehaviour
         {
             case "GAME_STARTED":
                 Debug.Log("GameUI 🎮 Game started!");
-                currentGameState = GameState.InGame;
+                currentGameState = GameState.CountDown;
                 RebuildPlayers();
                 RefreshUI();
-                UpdateBombIndictator(true);
 
                 //delete old explosion if it is still active
                 Destroy(explosion);
@@ -141,6 +147,7 @@ public class GameUI : MonoBehaviour
                 //disable loser text
                 loserTextObject.SetActive(false);
 
+                CountdownManager.Instance.StartCountdown();
                 break;
 
             case "POTATO_PASSED":
@@ -152,7 +159,7 @@ public class GameUI : MonoBehaviour
             case "GAME_ENDED":
                 Debug.Log($"💥 Game ended! Loser: {message.loser?.name}");
                 currentGameState = GameState.GameOver;
-                
+
                 // ✅ Disable all profiles on game end
                 foreach (GameProfile profile in activeProfiles)
                 {
@@ -167,7 +174,7 @@ public class GameUI : MonoBehaviour
                     {
                         sm.AddScore(message.loser.id, 1);
                         Debug.Log($"{message.loser.name} now has {sm.GetScore(message.loser.id)} points");
-                    
+
                         //update loser's score display
                         GameProfile loserProfile = activeProfiles.Find(p => p.GetPlayerId() == message.loser.id);
                         if (loserProfile != null)
@@ -240,7 +247,8 @@ public class GameUI : MonoBehaviour
             bool isClickable =
                 iHaveThePotato &&
                 profilePlayerId != nm.MyPlayerId &&
-                currentGameState != GameState.GameOver;
+                currentGameState != GameState.GameOver &&
+                currentGameState != GameState.CountDown;
 
             profile.SetClickable(isClickable);
         }
@@ -296,6 +304,16 @@ public class GameUI : MonoBehaviour
         Destroy(explosion);
     }
 
+    private void StartActualGame()
+    {
+        Debug.Log("Countdown finished - game live");
+
+        currentGameState = GameState.InGame;
+        RebuildPlayers();
+        RefreshUI();
+        UpdateBombIndictator(true);
+        UpdateProfileClickability();
+    }
 
     private void ReturnToLobby()
     {
