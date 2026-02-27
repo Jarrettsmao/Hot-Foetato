@@ -60,30 +60,47 @@ public class CountdownManager : MonoBehaviour
             return;
         }
 
-        StartCoroutine(CountdownSequence());
+        StartCoroutine(CountdownSequence(GetDefaultDurationSeconds()));
     }
 
-    private IEnumerator CountdownSequence()
+    public void StartCountdownTo(long countdownEndUnixMs)
+    {
+        if (isCountingDown)
+        {
+            Debug.LogWarning("Countdown already in progress!");
+            return;
+        }
+
+        long now = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+        float secondsRemaining = Mathf.Max(0.25f, (countdownEndUnixMs - now) / 1000f);
+        StartCoroutine(CountdownSequence(secondsRemaining));
+    }
+
+    private float GetDefaultDurationSeconds()
+    {
+        float defaultStep = numberDisplayTime + 0.1f;
+        return defaultStep * 3f + numberDisplayTime;
+    }
+
+    private IEnumerator CountdownSequence(float totalDurationSeconds)
     {
         isCountingDown = true;
+        float stepDuration = Mathf.Max(0.1f, totalDurationSeconds / 4f);
 
         // Activate countdown UI
         countdownText?.gameObject.SetActive(true);
 
         //show 3
-        yield return ShowNumber("3");
-        yield return new WaitForSeconds(0.1f);
+        yield return ShowNumber("3", stepDuration);
 
         //show 2
-        yield return ShowNumber("2");
-        yield return new WaitForSeconds(0.1f);
+        yield return ShowNumber("2", stepDuration);
 
         //show 1
-        yield return ShowNumber("1");
-        yield return new WaitForSeconds(0.1f);
+        yield return ShowNumber("1", stepDuration);
 
         //show go
-        yield return ShowNumber("GO!", Color.green);
+        yield return ShowNumber("GO!", stepDuration, Color.green);
 
         countdownText?.gameObject.SetActive(false);
         isCountingDown = false;
@@ -92,7 +109,7 @@ public class CountdownManager : MonoBehaviour
         OnCountdownFinished?.Invoke();
     }
 
-    private IEnumerator ShowNumber(string text, Color? color = null)
+    private IEnumerator ShowNumber(string text, float segmentDuration, Color? color = null)
     {
         if (countdownText)
         {
@@ -100,13 +117,17 @@ public class CountdownManager : MonoBehaviour
             countdownText.color = color ?? Color.white;
         }
 
+        float localFadeIn = Mathf.Min(fadeInTime, segmentDuration * 0.35f);
+        float localFadeOut = Mathf.Min(fadeOutTime, segmentDuration * 0.35f);
+        float holdTime = Mathf.Max(0f, segmentDuration - localFadeIn - localFadeOut);
+
         //animate fade in + scale up
         float elapsed = 0f;
 
-        while (elapsed < fadeInTime)
+        while (elapsed < localFadeIn)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / fadeInTime;
+            float t = localFadeIn > 0f ? elapsed / localFadeIn : 1f;
 
             //Fade in
             if (countdownCanvasGroup)
@@ -125,14 +146,17 @@ public class CountdownManager : MonoBehaviour
         }
 
         //Hold at full visibility
-        yield return new WaitForSeconds(numberDisplayTime - fadeInTime - fadeOutTime);
+        if (holdTime > 0f)
+        {
+            yield return new WaitForSeconds(holdTime);
+        }
 
         // Animate: Fade out
         elapsed = 0f;
-        while (elapsed < fadeOutTime)
+        while (elapsed < localFadeOut)
         {
             elapsed += Time.deltaTime;
-            float t = elapsed / fadeOutTime;
+            float t = localFadeOut > 0f ? elapsed / localFadeOut : 1f;
 
             // Fade out
             if (countdownCanvasGroup)

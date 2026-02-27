@@ -20,7 +20,11 @@ public class GameUI : MonoBehaviour
 
     [Header("Player/Bomb Positions")]
     [SerializeField] private Transform[] playerPositions;
-    [SerializeField] private GameObject[] bombIndicators;
+    [SerializeField] private Transform[] bombTargets;
+
+    [Header("Bomb Animator")]
+    [SerializeField] private BombAnimator bombAnimator;
+    [SerializeField] private float fallbackBombDurationSeconds = 20f;
 
     [Header("Explosion")]
     [SerializeField] private GameObject explosionPrefab;
@@ -48,8 +52,6 @@ public class GameUI : MonoBehaviour
         nm = NetworkManager.Instance;
         sm = ScoreManager.Instance;
 
-        CountdownManager.Instance.OnCountdownFinished += StartActualGame;
-
         SetupPlayers();
         RefreshUI();
         UpdateProfileClickability();
@@ -60,6 +62,12 @@ public class GameUI : MonoBehaviour
         leaveButton.onClick.AddListener(OnLeaveClicked);
 
         loserTextObject.SetActive(false);
+
+        //hide bomb initially
+        if (bombAnimator)
+        {
+            bombAnimator.Hide();
+        }
     }
 
     void OnDestroy()
@@ -68,12 +76,6 @@ public class GameUI : MonoBehaviour
         {
             nm.OnMessageReceived -= OnMessageReceived;
         }
-        if (CountdownManager.Instance)
-        {
-            CountdownManager.Instance.OnCountdownFinished -= StartActualGame;
-        }
-
-
         foreach (GameProfile profile in activeProfiles)
         {
             if (profile)
@@ -143,22 +145,48 @@ public class GameUI : MonoBehaviour
 
                 //delete old explosion if it is still active
                 Destroy(explosion);
-
                 //disable loser text
                 loserTextObject.SetActive(false);
 
-                CountdownManager.Instance.StartCountdown();
+                if (bombAnimator != null)
+                {
+                    bombAnimator.StopAnimation();
+                    bombAnimator.Hide();
+                }
+
+                if (CountdownManager.Instance != null)
+                {
+                    if (message.countdownEndsAt > 0)
+                    {
+                        CountdownManager.Instance.StartCountdownTo(message.countdownEndsAt);
+                    }
+                    else
+                    {
+                        CountdownManager.Instance.StartCountdown();
+                    }
+                }
+                break;
+
+            case "GAME_LIVE":
+                Debug.Log("GameUI 🚀 Game is live!");
+                StartActualGame();
                 break;
 
             case "POTATO_PASSED":
                 Debug.Log("🥔 Potato passed!");
                 UpdateProfileClickability();
-                UpdateBombIndictator(true);
+                UpdateBombPosition();
                 break;
 
             case "GAME_ENDED":
                 Debug.Log($"💥 Game ended! Loser: {message.loser?.name}");
                 currentGameState = GameState.GameOver;
+
+                if (bombAnimator != null)
+                {
+                    bombAnimator.StopAnimation();
+                    bombAnimator.Hide();
+                }
 
                 // ✅ Disable all profiles on game end
                 foreach (GameProfile profile in activeProfiles)
@@ -166,7 +194,7 @@ public class GameUI : MonoBehaviour
                     profile.SetClickable(false);
                 }
                 RefreshUI();
-                UpdateBombIndictator(false);
+
                 if (message.loser != null)
                 {
                     //add points to loser
@@ -177,10 +205,7 @@ public class GameUI : MonoBehaviour
 
                         //update loser's score display
                         GameProfile loserProfile = activeProfiles.Find(p => p.GetPlayerId() == message.loser.id);
-                        if (loserProfile != null)
-                        {
-                            loserProfile.SetScore(sm.GetScore(message.loser.id));
-                        }
+                        loserProfile?.SetScore(sm.GetScore(message.loser.id));
                     }
 
                     Transform loserTransform = GetBombSlotTransform(message.loser.id);
@@ -198,10 +223,7 @@ public class GameUI : MonoBehaviour
                 Debug.Log("🔙 Server requested return to lobby");
 
                 //reset scores when returning to lobby
-                if (sm != null)
-                {
-                    sm.ResetAllScores();
-                }
+                sm?.ResetAllScores();
 
                 ReturnToLobby();
                 break;
@@ -215,10 +237,7 @@ public class GameUI : MonoBehaviour
                 Debug.Log("👑 Host transferred during game");
                 if (message.room != null && message.room.phase == "lobby")
                 {
-                    if (sm != null)
-                    {
-                        sm.ResetAllScores();
-                    }
+                    sm?.ResetAllScores();
                     ReturnToLobby();
                 }
                 break;
@@ -227,10 +246,7 @@ public class GameUI : MonoBehaviour
                 Debug.Log("📋 Room updated during game");
                 if (message.room != null && message.room.phase == "lobby")
                 {
-                    if (sm != null)
-                    {
-                        sm.ResetAllScores();
-                    }
+                    sm?.ResetAllScores();
                     ReturnToLobby();
                 }
                 break;
@@ -279,41 +295,44 @@ public class GameUI : MonoBehaviour
         }
     }
 
-    void UpdateBombIndictator(bool status)
+    void UpdateBombPosition()
     {
-        Debug.Log("Holder according to UI: " + nm.CurrentRoom.potatoHolderId);
-        if (nm.CurrentRoom == null) return;
-        Debug.Log("room is not empty according to bomb" + status);
-        foreach (var bomb in bombIndicators)
+        if (nm.CurrentRoom == null || bombAnimator == null)
         {
-            SetImageVisible(bomb, false);
+            Debug.LogWarning("Cannot update bomb - room or animator is null");
+            return;
         }
-        if (status)
+
+        string holderId = nm.CurrentRoom.potatoHolderId;
+
+        if (string.IsNullOrEmpty(holderId))
         {
-            string holderId = nm.CurrentRoom.potatoHolderId;
-            if (string.IsNullOrEmpty(holderId)) return;
-
-            if (!playerIdToSlot.TryGetValue(holderId, out int slot))
-            {
-                Debug.LogWarning("Potato holder not found in slot map");
-                return;
-            }
-
-            SetImageVisible(bombIndicators[slot], true);
-
-            Debug.Log($"Bomb active at slot {slot}");
+            Debug.LogWarning("Potato holder ID is null");
+            bombAnimator.Hide();
+            return;
         }
-    }
 
-    //sets alpha to 255 or 0 depending on bool
-    private void SetImageVisible(GameObject gameObject, bool visible)
-    {
-        Image image = gameObject.GetComponent<Image>();
-        if (image == null) return;
+        if (!playerIdToSlot.TryGetValue(holderId, out int slot))
+        {
+            Debug.LogWarning($"Potato holder {holderId} not found in slot map");
+            return;
+        }
 
-        Color c = image.color;
-        c.a = visible ? 1f : 0f;
-        image.color = c;
+        if (slot < 0 || slot >= bombTargets.Length)
+        {
+            Debug.LogWarning($"Slot {slot} out of range");
+            return;
+        }
+
+        if (!bombTargets[slot])
+        {
+            Debug.LogWarning($"Bomb target at slot {slot} is null");
+            return;
+        }
+
+        //move bomb to the target position
+        bombAnimator.SnapTo(bombTargets[slot]);
+        Debug.Log($"bomb moved to slot {slot}");
     }
 
     IEnumerator ActivateExplosion(Transform target, float duration)
@@ -331,13 +350,38 @@ public class GameUI : MonoBehaviour
 
     private void StartActualGame()
     {
-        Debug.Log("Countdown finished - game live");
+        Debug.Log("Applying GAME_LIVE state");
 
         currentGameState = GameState.InGame;
         RebuildPlayers();
         RefreshUI();
-        UpdateBombIndictator(true);
         UpdateProfileClickability();
+
+        // Start bomb animation with game duration
+        if (bombAnimator != null && nm.CurrentRoom != null)
+        {
+            //calculate remaining time
+            long serverEndTime = nm.CurrentRoom.endTime;
+            long currentTime = System.DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+            float duration = (serverEndTime - currentTime) / 1000f;
+
+            if (duration <= 0f)
+            {
+                Debug.LogWarning(
+                    $"Invalid/expired duration from server. endTime={serverEndTime}, now={currentTime}. " +
+                    $"Using fallback {fallbackBombDurationSeconds:F1}s."
+                );
+                duration = fallbackBombDurationSeconds;
+            }
+
+            if (duration > 0f)
+            {
+                UpdateBombPosition();
+                bombAnimator.Show();
+                bombAnimator.StartAnimation(duration);
+                Debug.Log($"Bomb animation started: {duration:F1}s remaining");
+            }
+        }
     }
 
     private void ReturnToLobby()

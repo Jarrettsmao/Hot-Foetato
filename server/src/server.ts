@@ -26,6 +26,7 @@ function broadcast(roomId: string, message: unknown) {
 
 function startGame(roomId: string, room: GameRoom) {
   room.phase = "countdown";
+  const countdownEndsAt = Date.now() + COUNTDOWN_MS;
 
   // pick random potato holder
   const randomIndex = Math.floor(Math.random() * room.players.length);
@@ -35,6 +36,7 @@ function startGame(roomId: string, room: GameRoom) {
   broadcast(roomId, {
     type: "GAME_STARTED",
     room: room,
+    countdownEndsAt,
     message: `Game started! ${
       room.players.find((p) => p.id === room.potatoHolderId)?.name
     } has the potato!`,
