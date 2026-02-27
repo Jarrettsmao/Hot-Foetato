@@ -13,9 +13,9 @@ public class BombAnimator : MonoBehaviour
     [SerializeField] private Image bombImage;
 
     [Header("Breathing Animation")]
-    [SerializeField] private float breatheSpeed = 1.5f;
     [SerializeField] private float breatheMinScale = 0.95f;
     [SerializeField] private float breatheMaxScale = 1.15f;
+    [SerializeField] private float urgentRedMaxScale = 1.28f;
 
     [Header("Color cycle Timing")]
     [SerializeField] private float normalCycleSpeed = 0.6f; // Black <-> Mahogany
@@ -49,15 +49,6 @@ public class BombAnimator : MonoBehaviour
         if (isAnimating)
         {
             StopAnimation();
-        }
-
-        gameStartTime = Time.time;
-        gameDuration = duration;
-        isAnimating = true;
-
-        if (bombImage)
-        {
-            bombImage.gameObject.SetActive(true);
         }
 
         gameStartTime = Time.time;
@@ -106,40 +97,41 @@ public class BombAnimator : MonoBehaviour
             float timeRemaining = gameDuration - timeElapsed;
             float percentageRemaining = Mathf.Clamp01(timeRemaining / gameDuration);
 
-            //breathing animation (scale pulsing)
-            float breathe = Mathf.Sin(Time.time * breatheSpeed);
-            float scale = Mathf.Lerp(breatheMinScale, breatheMaxScale, (breathe + 1f) / 2f);
-
-            if (bombImage)
-            {
-                bombImage.transform.localScale = Vector3.one * scale;
-            }
-
             // Color Cycling based on time remaining
             if (percentageRemaining > 0.5f)
             {
-                //phase 1 cycle
-                float cycle = Mathf.PingPong(Time.time / normalCycleSpeed, 1f);
+                // Normal phase: one shared pulse drives both scale and color.
+                float pulse = Mathf.PingPong(Time.time / normalCycleSpeed, 1f);
+                float scale = Mathf.Lerp(breatheMinScale, breatheMaxScale, pulse);
 
                 if (bombImage)
                 {
-                    bombImage.sprite = cycle < 0.5f ? bombBlack : bombMahogany;
+                    bombImage.transform.localScale = Vector3.one * scale;
+                    bombImage.sprite = pulse < 0.5f ? bombBlack : bombMahogany;
                 }
             } else
             {
-                //phase 2 cycle
+                // Urgent phase: Black -> Mahogany -> Red, with red peaking larger.
                 float cycle = Time.time / urgentCycleSpeed % 3f;
+                int phase = Mathf.FloorToInt(cycle);
+                float phaseT = cycle - phase;
 
                 if (bombImage)
                 {
-                    if (cycle < 1f)
+                    if (phase == 0)
                     {
+                        bombImage.transform.localScale =
+                            Vector3.one * Mathf.Lerp(breatheMinScale, breatheMaxScale, phaseT);
                         bombImage.sprite = bombBlack;
-                    } else if (cycle < 2f)
+                    } else if (phase == 1)
                     {
+                        bombImage.transform.localScale =
+                            Vector3.one * Mathf.Lerp(breatheMaxScale, urgentRedMaxScale, phaseT);
                         bombImage.sprite = bombMahogany;
                     } else
                     {
+                        bombImage.transform.localScale =
+                            Vector3.one * Mathf.Lerp(urgentRedMaxScale, breatheMinScale, phaseT);
                         bombImage.sprite = bombRed;
                     }
                 }

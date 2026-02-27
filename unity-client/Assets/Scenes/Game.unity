@@ -722,11 +722,11 @@ MonoBehaviour:
   bombMahogany: {fileID: -6597543737910588513, guid: cf8b281c937c0ca4f8eed7c24adcb947, type: 3}
   bombRed: {fileID: -5328540232675454527, guid: 94b079fe1c98b9542bd6e5f26c6fa986, type: 3}
   bombImage: {fileID: 0}
-  breatheSpeed: 1.5
   breatheMinScale: 0.95
   breatheMaxScale: 1.15
-  normalCycleSpeed: 0.8
-  urgentCycleSpeed: 0.4
+  urgentRedMaxScale: 1.28
+  normalCycleSpeed: 0.6
+  urgentCycleSpeed: 0.2
 --- !u!114 &416202424
 MonoBehaviour:
   m_ObjectHideFlags: 0
