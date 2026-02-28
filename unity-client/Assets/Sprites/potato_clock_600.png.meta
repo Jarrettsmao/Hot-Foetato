@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 02dbb45e713160148b875fa991d5d4d3
+guid: bbc76f2d9fe14b944afb1395ebe15a03
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 56405453324043922
-    second: pixil-frame-0 (5)_0
+      213: 7873479243089726702
+    second: potato_clock_400_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: pixil-frame-0 (5)_0
+      name: potato_clock_400_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1760
-        height: 1012
+        x: 101
+        y: 77
+        width: 386
+        height: 506
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 29646c0067468c000800000000000000
-      internalID: 56405453324043922
+      spriteID: eec46c6f7a7344d60800000000000000
+      internalID: 7873479243089726702
       vertices: []
       indices: 
       edges: []
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      pixil-frame-0 (5)_0: 56405453324043922
+      potato_clock_400_0: 7873479243089726702
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

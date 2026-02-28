@@ -345,6 +345,12 @@ wss.on("connection", (ws: WebSocket) => {
         return;
       }
 
+      broadcast(clientData.roomId, {
+        type: "GAME_PREPARING",
+        room: room,
+        message: "Preparing match...",
+      });
+
       //make sure all players are tracked and tries to connect again
       setTimeout(() => startGame(clientData.roomId, room), 5000);
     } else if (message.type === "PASS_POTATO") {
@@ -586,4 +592,4 @@ function getAvailableSpriteIndex(room: GameRoom) {
   return 0;
 }
 
-console.log("🚀 WebSocket server running on wss://hot-foetato.onrender.com/");
+console.log("🚀 WebSocket server running on ws://localhost:8080/");

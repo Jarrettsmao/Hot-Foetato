@@ -18,6 +18,9 @@ public class GameUI : MonoBehaviour
     [SerializeField] private TMP_Text startText;
     [SerializeField] private Button leaveButton;
 
+    [Header("Spinner")]
+    [SerializeField] private GameObject spinner;
+
     [Header("Player/Bomb Positions")]
     [SerializeField] private Transform[] playerPositions;
     [SerializeField] private Transform[] bombTargets;
@@ -62,6 +65,10 @@ public class GameUI : MonoBehaviour
         leaveButton.onClick.AddListener(OnLeaveClicked);
 
         loserTextObject.SetActive(false);
+        if (spinner != null)
+        {
+            spinner.SetActive(false);
+        }
 
         //hide bomb initially
         if (bombAnimator)
@@ -137,7 +144,19 @@ public class GameUI : MonoBehaviour
     {
         switch (message.type)
         {
+            case "GAME_PREPARING":
+                Debug.Log("Game Preparing");
+                if (spinner != null)
+                {
+                    spinner.SetActive(true);
+                }
+                break;
+
             case "GAME_STARTED":
+                if (spinner != null)
+                {
+                    spinner.SetActive(false);
+                }
                 Debug.Log("GameUI 🎮 Game started!");
                 currentGameState = GameState.CountDown;
                 RebuildPlayers();
