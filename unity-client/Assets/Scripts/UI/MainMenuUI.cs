@@ -10,6 +10,7 @@ public class MainMenu : MonoBehaviour
 {
     [Header("UI Elements")]
     [SerializeField] private Button connectButton;
+    [SerializeField] private GameObject spinner;
     [SerializeField] private TMP_Text statusText;
 
     private NetworkManager nm;
@@ -19,6 +20,7 @@ public class MainMenu : MonoBehaviour
         nm = NetworkManager.Instance;
         connectButton.onClick.AddListener(OnConnectClicked);
         statusText.enabled = false;
+        spinner.SetActive(false);
 
         nm.OnConnected += OnConnected;
         nm.OnDisconnected += OnDisconnected;
@@ -28,6 +30,7 @@ public class MainMenu : MonoBehaviour
     {
         statusText.text = "Connecting...";
         statusText.enabled = true;
+        spinner.SetActive(true);
         connectButton.interactable = false;
 
         try
@@ -52,6 +55,7 @@ public class MainMenu : MonoBehaviour
     {
         nm.OnDisconnected -= OnDisconnected;
         connectButton.interactable = true;
+        spinner.SetActive(false);
         statusText.text = "Connection failed.";
     }
 }
