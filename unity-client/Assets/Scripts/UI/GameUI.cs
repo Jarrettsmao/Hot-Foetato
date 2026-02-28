@@ -208,10 +208,10 @@ public class GameUI : MonoBehaviour
                         loserProfile?.SetScore(sm.GetScore(message.loser.id));
                     }
 
-                    Transform loserTransform = GetBombSlotTransform(message.loser.id);
-                    if (loserTransform != null)
+                    Transform bombTransform = GetBombTargetTransform(message.loser.id);
+                    if (bombTransform != null)
                     {
-                        StartCoroutine(ActivateExplosion(loserTransform, 2f));
+                        StartCoroutine(ActivateExplosion(bombTransform, 2f));
                     }
 
                     //show loser message
@@ -340,7 +340,7 @@ public class GameUI : MonoBehaviour
         explosion = Instantiate(explosionPrefab, target);
 
         RectTransform explosionRect = explosion.GetComponent<RectTransform>();
-        explosionRect.anchoredPosition = Vector2.zero;
+        explosionRect.anchoredPosition = new Vector2(0f, 0f);
         explosionRect.localScale = Vector3.one;
 
         yield return new WaitForSeconds(duration);
@@ -454,16 +454,17 @@ public class GameUI : MonoBehaviour
         UpdateProfileClickability();
     }
 
-    private Transform GetBombSlotTransform(string playerId)
+    private Transform GetBombTargetTransform(string playerId)
     {
         if (!playerIdToSlot.TryGetValue(playerId, out int slot))
         {
             return null;
         }
 
-        if (slot < 0 || slot >= playerPositions.Length) return null;
+        if (slot < 0 || slot >= bombTargets.Length) return null;
+        if (bombTargets[slot] == null) return null;
 
-        return playerPositions[slot];
+        return bombTargets[slot];
     }
 
     private void RebuildPlayers()

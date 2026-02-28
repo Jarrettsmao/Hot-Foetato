@@ -251,7 +251,7 @@ wss.on("connection", (ws) => {
                 return;
             }
             //make sure all players are tracked and tries to connect again
-            setTimeout(() => startGame(clientData.roomId, room), 5000);
+            setTimeout(() => startGame(clientData.roomId, room), 3000);
         }
         else if (message.type === "PASS_POTATO") {
             const clientData = clients.get(ws);

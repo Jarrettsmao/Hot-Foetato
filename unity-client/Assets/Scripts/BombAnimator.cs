@@ -25,7 +25,6 @@ public class BombAnimator : MonoBehaviour
     private float gameDuration;
     private bool isAnimating = false;
     private Coroutine animationCoroutine;
-    private Transform originalParent;
 
     void Awake()
     {
@@ -34,10 +33,6 @@ public class BombAnimator : MonoBehaviour
             bombImage = GetComponent<Image>();
         }
 
-        if (bombImage != null)
-        {
-            originalParent = bombImage.transform.parent;
-        }
     }
 
     /// <summary>
@@ -168,36 +163,18 @@ public class BombAnimator : MonoBehaviour
     {
         if (target != null && bombImage != null)
         {
-            // Keep bomb under its original UI hierarchy to avoid accidental reparent drift.
-            if (originalParent != null && bombImage.transform.parent != originalParent)
-            {
-                bombImage.transform.SetParent(originalParent, true);
-            }
-
             RectTransform bombRect = bombImage.rectTransform;
             RectTransform targetRect = target as RectTransform;
 
             if (bombRect != null && targetRect != null)
             {
-                Canvas canvas = bombImage.GetComponentInParent<Canvas>();
-                if (canvas != null)
-                {
-                    RectTransform canvasRect = canvas.transform as RectTransform;
-                    Camera cam = canvas.renderMode == RenderMode.ScreenSpaceOverlay ? null : canvas.worldCamera;
-                    Vector2 screenPoint = RectTransformUtility.WorldToScreenPoint(cam, targetRect.position);
-
-                    if (canvasRect != null &&
-                        RectTransformUtility.ScreenPointToLocalPointInRectangle(
-                            canvasRect,
-                            screenPoint,
-                            cam,
-                            out Vector2 localPoint))
-                    {
-                        bombRect.SetParent(canvasRect, false);
-                        bombRect.anchoredPosition = localPoint;
-                        return;
-                    }
-                }
+                // Exact UI snap: use target local space and reset to center.
+                bombRect.SetParent(targetRect, false);
+                bombRect.anchorMin = new Vector2(0.5f, 0.5f);
+                bombRect.anchorMax = new Vector2(0.5f, 0.5f);
+                bombRect.pivot = new Vector2(0.5f, 0.5f);
+                bombRect.anchoredPosition = Vector2.zero;
+                return;
             }
 
             bombImage.transform.position = target.position;
