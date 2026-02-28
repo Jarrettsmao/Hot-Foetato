@@ -96,7 +96,7 @@ public class LobbyUI : MonoBehaviour
                 break;
 
             case "ERROR":
-                if (message.code == "DUPLICATE_NAME")
+                if (nm.CurrentRoom == null)
                 {
                     ControlInputUI(true);
                 }

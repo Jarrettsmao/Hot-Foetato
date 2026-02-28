@@ -1673,7 +1673,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: c3a3514be8ad8d54ebf60578ee82915d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::GameUI
-  playerProfilePrefab: {fileID: 2886469460556276568, guid: a5dd32ccf80fa70429b03c71202fe2c6, type: 3}
+  playerProfilePrefab: {fileID: 1003511854059476966, guid: e7a6ba97ed826da4a8fc50009411c7f9, type: 3}
   potatoSpritesData: {fileID: 11400000, guid: 271a3476f597bf34fb7354702e452f5e, type: 2}
   startButton: {fileID: 809232330}
   startText: {fileID: 305028376}
