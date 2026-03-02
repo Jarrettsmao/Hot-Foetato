@@ -6,6 +6,11 @@
 
 @font-face {
     font-family: "PixelTitle";
+    src: url("/fonts/PixelDigivolve-mOm9.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "PixelTitleItalics";
     src: url("/fonts/PixelDigivolveItalic-dV8R.woff2") format("woff2");
 }
 
@@ -70,10 +75,11 @@ body {
 }
 
 .title {
-  font-size: 72px;
+  font-size: 80px;
   font-weight: bold;
   margin: 0;
-  text-shadow: 4px 4px 8px rgba(0, 0, 0, 0.3);
+  color: #D99E4D;
+  text-shadow: 6px 6px 10px rgba(0, 0, 0, 0.3);
   letter-spacing: 4px;
   font-family: "PixelTitle", sans-serif;
   letter-spacing: 2px;
@@ -95,7 +101,7 @@ body {
 
 .play-button {
   padding: 20px 50px;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
   background: white;
   color: #667eea;
@@ -160,7 +166,8 @@ body {
   font-size: 36px;
   margin-bottom: 30px;
   text-align: center;
-  font-family: "PixelTitle", sans-serif;
+  font-family: "PixelTitleItalics", sans-serif;
+  color: #e0ab62;
   letter-spacing: 2px;
 }
 
@@ -217,8 +224,9 @@ body {
   font-size: 36px;
   margin-bottom: 24px;
   text-align: center;
-  font-family: "PixelTitle", sans-serif;
+  font-family: "PixelTitleItalics", sans-serif;
   letter-spacing: 2px;
+  color: #e0ab62;
 }
 
 .gif-grid {
@@ -329,8 +337,9 @@ body {
   font-size: 42px;
   text-align: center;
   margin-bottom: 15px;
-  font-family: "PixelTitle", sans-serif;
+  font-family: "PixelTitleItalics", sans-serif;
   letter-spacing: 2px;
+  color: #e0ab62;
 }
 
 .portfolio-intro {
