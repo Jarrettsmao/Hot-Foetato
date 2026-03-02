@@ -1,7 +1,8 @@
 import { WebSocketServer, WebSocket } from "ws";
 import { GameRoom, Player, ClientData } from "./types";
 
-const wss = new WebSocketServer({ port: 8080 });
+const PORT = Number(process.env.PORT) || 8080;
+const wss = new WebSocketServer({ port: PORT });
 
 //in-memory storage (replace with database later)
 const rooms = new Map<string, GameRoom>();
@@ -592,4 +593,4 @@ function getAvailableSpriteIndex(room: GameRoom) {
   return 0;
 }
 
-console.log("🚀 WebSocket server running on ws://localhost:8080/");
+console.log(`🚀 WebSocket server running on port ${PORT}`);
