@@ -15,17 +15,17 @@ import "./Home.css";
 function Home() {
   const gifShowcase = [
     {
-      src: "./public/gifs/making_lobby.gif",
+      src: "/gifs/making_lobby.gif",
       title: "Making a Lobby",
       description: "A player creates a room code and others can join using it. Players confirm they are ready before hosts are allowed to start.",
     },
     {
-      src: "./public/gifs/gameplay.gif",
+      src: "/gifs/gameplay.gif",
       title: "Gameplay",
       description: "Players click on other player profiles to pass the bomb in real time. The bomb goes off between 10-30 seconds.",
     },
     {
-      src: "./public/gifs/disconnects.gif",
+      src: "/gifs/disconnects.gif",
       title: "Disconnects",
       description: "Players that disconnect in-game have a 5 seconds grace period before the game is cancelled and remaining players are returned to the lobby.",
     },
