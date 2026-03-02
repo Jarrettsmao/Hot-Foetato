@@ -13,6 +13,24 @@ import {
 import "./Home.css";
 
 function Home() {
+  const gifShowcase = [
+    {
+      src: "./public/gifs/making_lobby.gif",
+      title: "Making a Lobby",
+      description: "A player creates a room code and others can join using it. Players confirm they are ready before hosts are allowed to start.",
+    },
+    {
+      src: "./public/gifs/gameplay.gif",
+      title: "Gameplay",
+      description: "Players click on other player profiles to pass the bomb in real time. The bomb goes off between 10-30 seconds.",
+    },
+    {
+      src: "./public/gifs/disconnects.gif",
+      title: "Disconnects",
+      description: "Players that disconnect in-game have a 5 seconds grace period before the game is cancelled and remaining players are returned to the lobby.",
+    },
+  ];
+
   return (
     <div className="home-page">
       <div className="hero-section">
@@ -63,6 +81,21 @@ function Home() {
               <h3>Don't Explode!</h3>
               <p>Avoid being the last one holding it</p>
             </div>
+          </div>
+        </div>
+
+        <div className="gif-showcase">
+          <h2>Preview</h2>
+          <div className="gif-grid">
+            {gifShowcase.map((item) => (
+              <figure className="gif-card" key={item.title}>
+                <img src={item.src} alt={item.title} className="gif-image" loading="lazy" />
+                <figcaption className="gif-caption">
+                  <h3>{item.title}</h3>
+                  <p>{item.description}</p>
+                </figcaption>
+              </figure>
+            ))}
           </div>
         </div>
 

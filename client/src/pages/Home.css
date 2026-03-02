@@ -206,6 +206,57 @@ body {
   font-size: 16px;
 }
 
+.gif-showcase {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto 40px;
+  padding: 0 20px;
+}
+
+.gif-showcase h2 {
+  font-size: 36px;
+  margin-bottom: 24px;
+  text-align: center;
+  font-family: "PixelTitle", sans-serif;
+  letter-spacing: 2px;
+}
+
+.gif-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.gif-card {
+  background: rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.gif-image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.gif-caption {
+  padding: 16px;
+}
+
+.gif-caption h3 {
+  margin: 0 0 8px;
+  font-size: 20px;
+}
+
+.gif-caption p {
+  margin: 0;
+  opacity: 0.9;
+  line-height: 1.4;
+}
+
 /* ✅ FOOTER - Full Width */
 .footer {
   flex-shrink: 0;
@@ -242,6 +293,10 @@ body {
   }
 
   .how-to-play {
+    padding: 0 15px;
+  }
+
+  .gif-showcase {
     padding: 0 15px;
   }
 
